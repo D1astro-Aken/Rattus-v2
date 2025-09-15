@@ -60,31 +60,18 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.54f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Sprites\Enemy Galore 1 - Pixel Art\Script\EnemyTest.cs" />
     <Compile Include="Assets\Scripts\Enemies\MonsterRouting.cs" />
-    <Compile Include="Assets\Hero Knight - Pixel Art\Demo\DestroyEvent_HeroKnight.cs" />
     <Compile Include="Assets\Scripts\Enemies\ChargingEnemy.cs" />
     <Compile Include="Assets\Scripts\Player\Health\HealthBar.cs" />
     <Compile Include="Assets\Scripts\Core\SoundManager.cs" />
     <Compile Include="Assets\Scripts\Enemies\Traps\TrapDmg.cs" />
-    <Compile Include="Assets\Hero Knight - Pixel Art\Demo\Sensor_HeroKnight.cs" />
     <Compile Include="Assets\Scripts\Core\CameraFollow.cs" />
-    <Compile Include="Assets\Sprites\UI pack 1\Scripts\FillValueNumber.cs" />
     <Compile Include="Assets\Scripts\Collectibles\HealthCollectibles.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttack.cs" />
     <Compile Include="Assets\Scripts\Enemies\Enemy.cs" />
-    <Compile Include="Assets\Hero Knight - Pixel Art\ColorSwap\ColorSwap_HeroKnight.cs" />
-    <Compile Include="Assets\Hero Knight - Pixel Art\Demo\HeroKnight.cs" />
     <Compile Include="Assets\Scripts\Player\Health\Health.cs" />
-    <Compile Include="Assets\Sprites\Enemy Galore 1 - Pixel Art\Script\EnemySelector.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Enemies\EnemyDmg.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Assets\Sprites\UI pack 1\Documentation.txt" />
-    <None Include="Assets\Sprites\Enemy Galore 1 - Pixel Art\Read Me.txt" />
-    <None Include="Assets\Sprites\UI pack\Documentation.txt" />
-    <None Include="Assets\Hero Knight - Pixel Art\ColorSwap\Sprites-ColorSwap.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
