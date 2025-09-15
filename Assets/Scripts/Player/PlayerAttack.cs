@@ -7,7 +7,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float attackMoveDistance = 1f;
     [SerializeField] private float attackDelay = 0.3f; // Time until damage is applied
     [SerializeField] private float postAttackDelay = 0.3f;
-    [SerializeField] private AudioClip SwordSwingSFX;
+ 
 
     [SerializeField] private Transform attackPoint;
     [SerializeField] private int attackDamage = 40;
@@ -33,7 +33,7 @@ public class PlayerAttack : MonoBehaviour
         if (Input.GetMouseButtonDown(0) && cooldownTimer > attackCooldown && !isAttacking && playerMovement.isGrounded())
         {
             StartCoroutine(PerformAttack());
-            SoundManager.instance.PlaySound(SwordSwingSFX);
+        
         }
 
         cooldownTimer += Time.deltaTime;
