@@ -172,8 +172,13 @@ MonoBehaviour:
   moveSpeed: 3
   patrolDestination: 0
   playerTransform: {fileID: 0}
-  isChasing: 0
-  chaseDistance: 5
+  enableCharge: 1
+  triggerDistance: 4
+  windUpDuration: 0.5
+  chargeSpeed: 8
+  chargeDuration: 1
+  chargeCooldown: 3
+  stunDuration: 1
 --- !u!50 &3163103155493246072
 Rigidbody2D:
   serializedVersion: 4
