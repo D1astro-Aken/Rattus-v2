@@ -28,20 +28,37 @@ public class MonsterPatrol : MonoBehaviour
         if (patrolPoints.Length == 0) return;
 
         Transform targetPoint = patrolPoints[patrolDestination];
+
+        // Otoèení smìrem k patrol pointu
+        if (targetPoint.position.x < transform.position.x)
+            transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
+        else
+            transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
+
         transform.position = Vector2.MoveTowards(transform.position, targetPoint.position, moveSpeed * Time.deltaTime);
 
         if (Vector2.Distance(transform.position, targetPoint.position) < 0.2f)
         {
-            if (patrolDestination == 0)
+            patrolDestination = (patrolDestination + 1) % patrolPoints.Length;
+        }
+    }
+
+    // Funkce pro okamžité nastavení patrolDestination na nejbližší bod
+    public void ReturnToNearestPatrolPoint()
+    {
+        if (patrolPoints.Length == 0) return;
+
+        float minDistance = float.MaxValue;
+        int nearestIndex = 0;
+        for (int i = 0; i < patrolPoints.Length; i++)
+        {
+            float distance = Vector2.Distance(transform.position, patrolPoints[i].position);
+            if (distance < minDistance)
             {
-                transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
-                patrolDestination = 1;
-            }
-            else
-            {
-                transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
-                patrolDestination = 0;
+                minDistance = distance;
+                nearestIndex = i;
             }
         }
+        patrolDestination = nearestIndex;
     }
 }
