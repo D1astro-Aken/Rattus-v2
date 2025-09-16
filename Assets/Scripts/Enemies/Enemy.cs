@@ -1,12 +1,11 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private float knockbackDuration = 0.5f; // Duration of knockback
-    
+
     private int currentHealth;
 
     private bool dead = false;
@@ -43,7 +42,7 @@ public class Enemy : MonoBehaviour
     {
         isKnockedBack = true;
         rb2d.velocity = Vector2.zero; // Reset current velocity
-        rb2d.AddForce(knockbackDirection * 3f, ForceMode2D.Impulse); // Apply knockback force (adjust magnitude)
+        rb2d.AddForce(knockbackDirection * 3f, ForceMode2D.Impulse); // Apply knockback
 
         yield return new WaitForSeconds(knockbackDuration);
 
@@ -71,5 +70,11 @@ public class Enemy : MonoBehaviour
     public bool IsDead()
     {
         return dead;
+    }
+
+    // New getter for FollowingEnemy
+    public bool IsKnockedBack()
+    {
+        return isKnockedBack;
     }
 }
