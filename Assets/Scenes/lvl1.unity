@@ -5623,7 +5623,7 @@ Transform:
   m_GameObject: {fileID: 272824939}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -238.1, y: -130.1, z: 0.015216028}
+  m_LocalPosition: {x: -335.14, y: -161.78, z: 0.015216028}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5691,8 +5691,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1564995609}
+  - {fileID: 489898514}
   moveSpeed: 3
 --- !u!50 &272824949
 Rigidbody2D:

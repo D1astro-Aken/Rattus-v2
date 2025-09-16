@@ -122,6 +122,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &266647524 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+  m_PrefabInstance: {fileID: 1440166907}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &557495781
 GameObject:
   m_ObjectHideFlags: 0
@@ -251,67 +256,6 @@ Transform:
   - {fileID: 853755275}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &786367930
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1963192501831843114, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: MinDistance
-      value: 0.5103941
-      objectReference: {fileID: 0}
-    - target: {fileID: 3040415742074575674, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_Name
-      value: Main Camera (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.03
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.01
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5146799918646457628, guid: 91711ae813334074f9621e880840669a, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 91711ae813334074f9621e880840669a, type: 3}
 --- !u!1 &853755274
 GameObject:
   m_ObjectHideFlags: 0
@@ -492,8 +436,8 @@ TilemapRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1574639059
+  m_SortingLayer: 4
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -10519,6 +10463,7 @@ GameObject:
   - component: {fileID: 1035283033}
   - component: {fileID: 1035283032}
   - component: {fileID: 1035283035}
+  - component: {fileID: 1035283036}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -10644,6 +10589,25 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!114 &1035283036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035283031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f20188dcbd38cb4db02d3aa553ef117, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FlowSpeed: 2
+  target: {fileID: 266647524}
+  yOffset: 1
+  yOffsetChangeSpeed: 3
+  yOffsetReturnSpeed: 2
+  yOffsetMin: 0
+  yOffsetMax: 3
 --- !u!1001 &1440166907
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10825,6 +10789,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 1035283034}
   - {fileID: 1440166907}
-  - {fileID: 786367930}
   - {fileID: 772903241}
   - {fileID: 2140882961}
