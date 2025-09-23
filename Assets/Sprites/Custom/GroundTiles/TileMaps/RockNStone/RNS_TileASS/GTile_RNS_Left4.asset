@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: G_Tile_RNS_Right
+  m_Name: GTile_RNS_Left4
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: d6437edc9f59bc84e93dd4bb3c390866, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7c1da2040ac9f6147aabc3734ed5fe2b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
