@@ -154,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canGrab: 0
   ledgePosition: {x: 0, y: 0}
-  upperCheck: {fileID: 0}
+  upperCheck: {fileID: 261272668}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
