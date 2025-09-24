@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 585235841184129505}
   - component: {fileID: 4035147298817369975}
   - component: {fileID: 2552276391159883839}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: Pillars_Marble1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
