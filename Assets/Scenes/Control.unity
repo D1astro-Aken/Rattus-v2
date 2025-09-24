@@ -614,6 +614,7 @@ GameObject:
   m_Component:
   - component: {fileID: 320753042}
   - component: {fileID: 320753043}
+  - component: {fileID: 320753044}
   m_Layer: 8
   m_Name: BG_Fog2
   m_TagString: Untagged
@@ -630,7 +631,7 @@ Transform:
   m_GameObject: {fileID: 320753041}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 103, y: -31.3, z: 0}
+  m_LocalPosition: {x: 102.64, y: -28.739998, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -688,6 +689,127 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &320753044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 320753041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.4
+  parallaxMultiplierY: 0.4
+--- !u!1 &358788888
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 358788891}
+  - component: {fileID: 358788890}
+  - component: {fileID: 358788889}
+  m_Layer: 9
+  m_Name: AntSpitter_Idle1
+  m_TagString: Enemy
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!95 &358788889
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358788888}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 44505b4f1066481499ab4c1a6b9049c8, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!212 &358788890
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358788888}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: -1720466627
+  m_SortingLayer: 5
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: 64ebbc31584fb0648b92ba5fb72536ec, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 5, y: 5}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!4 &358788891
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358788888}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.08, y: -5.49, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &557495781
 GameObject:
   m_ObjectHideFlags: 0
@@ -698,6 +820,7 @@ GameObject:
   m_Component:
   - component: {fileID: 557495782}
   - component: {fileID: 557495783}
+  - component: {fileID: 557495784}
   m_Layer: 8
   m_Name: BG_Sky_Sunset1
   m_TagString: Untagged
@@ -714,7 +837,7 @@ Transform:
   m_GameObject: {fileID: 557495781}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 100.3, y: -18.9, z: 0}
+  m_LocalPosition: {x: 100.82, y: -17, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -772,6 +895,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &557495784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 557495781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.9
+  parallaxMultiplierY: 0.2
 --- !u!1 &772903239
 GameObject:
   m_ObjectHideFlags: 0
@@ -11285,6 +11423,7 @@ GameObject:
   m_Component:
   - component: {fileID: 886764632}
   - component: {fileID: 886764633}
+  - component: {fileID: 886764634}
   m_Layer: 8
   m_Name: BG_Hills_2_1
   m_TagString: Untagged
@@ -11301,7 +11440,7 @@ Transform:
   m_GameObject: {fileID: 886764631}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 102.3, y: -27.7, z: 0}
+  m_LocalPosition: {x: 101.94, y: -25.14, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -11359,6 +11498,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &886764634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 886764631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.4
+  parallaxMultiplierY: 0.2
 --- !u!1 &908994182
 GameObject:
   m_ObjectHideFlags: 0
@@ -11369,6 +11523,7 @@ GameObject:
   m_Component:
   - component: {fileID: 908994183}
   - component: {fileID: 908994184}
+  - component: {fileID: 908994185}
   m_Layer: 8
   m_Name: BG_Fog1
   m_TagString: Untagged
@@ -11385,7 +11540,7 @@ Transform:
   m_GameObject: {fileID: 908994182}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 104.4, y: -20.9, z: 0}
+  m_LocalPosition: {x: 105.52, y: -20.9, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -11443,6 +11598,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &908994185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908994182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.85
+  parallaxMultiplierY: 0.4
 --- !u!1 &962293628
 GameObject:
   m_ObjectHideFlags: 0
@@ -11453,6 +11623,7 @@ GameObject:
   m_Component:
   - component: {fileID: 962293629}
   - component: {fileID: 962293630}
+  - component: {fileID: 962293631}
   m_Layer: 8
   m_Name: BG_Hills_4_1
   m_TagString: Untagged
@@ -11469,7 +11640,7 @@ Transform:
   m_GameObject: {fileID: 962293628}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 104.7, y: -21, z: 0}
+  m_LocalPosition: {x: 104.86, y: -19.72, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -11527,6 +11698,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &962293631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962293628}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.8
+  parallaxMultiplierY: 0.2
 --- !u!1 &1035283031
 GameObject:
   m_ObjectHideFlags: 0
@@ -11751,6 +11937,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1622889770}
   - component: {fileID: 1622889771}
+  - component: {fileID: 1622889772}
   m_Layer: 8
   m_Name: BG_Hills_3_3
   m_TagString: Untagged
@@ -11767,7 +11954,7 @@ Transform:
   m_GameObject: {fileID: 1622889769}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 100.9, y: -24.4, z: 0}
+  m_LocalPosition: {x: 101.08, y: -22.66, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -11825,6 +12012,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1622889772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622889769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.6
+  parallaxMultiplierY: 0.2
 --- !u!1 &1668192008
 GameObject:
   m_ObjectHideFlags: 0
@@ -11835,6 +12037,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1668192009}
   - component: {fileID: 1668192010}
+  - component: {fileID: 1668192011}
   m_Layer: 8
   m_Name: BG_Fog2 (1)
   m_TagString: Untagged
@@ -11851,7 +12054,7 @@ Transform:
   m_GameObject: {fileID: 1668192008}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 104.4, y: -26.1, z: 0}
+  m_LocalPosition: {x: 104.579994, y: -24.36, z: 0}
   m_LocalScale: {x: 6, y: 6, z: 6}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -11909,6 +12112,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1668192011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668192008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9424d174a845b2f4b995d7e41eaf1fef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1035283034}
+  parallaxMultiplierX: 0.65
+  parallaxMultiplierY: 0.4
 --- !u!1 &2140882960
 GameObject:
   m_ObjectHideFlags: 0
@@ -11934,7 +12152,7 @@ Transform:
   m_GameObject: {fileID: 2140882960}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -23.3, y: 27.2, z: -0.2732567}
+  m_LocalPosition: {x: -23.3, y: 25.6, z: -0.2732567}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -11955,3 +12173,4 @@ SceneRoots:
   - {fileID: 1440166907}
   - {fileID: 772903241}
   - {fileID: 2140882961}
+  - {fileID: 358788891}
