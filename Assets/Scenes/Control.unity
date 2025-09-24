@@ -702,6 +702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.4
   parallaxMultiplierY: 0.4
 --- !u!1 &358788888
@@ -810,6 +811,10 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+=======
+  parallaxMultiplierX: 1
+  parallaxMultiplierY: 0.2
+>>>>>>> Stashed changes
 --- !u!1 &557495781
 GameObject:
   m_ObjectHideFlags: 0
@@ -908,7 +913,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.9
+=======
+  parallaxMultiplierX: 0.21
+>>>>>>> Stashed changes
   parallaxMultiplierY: 0.2
 --- !u!1 &772903239
 GameObject:
@@ -11511,7 +11520,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.4
+=======
+  parallaxMultiplierX: 0.43
+>>>>>>> Stashed changes
   parallaxMultiplierY: 0.2
 --- !u!1 &908994182
 GameObject:
@@ -11611,8 +11624,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.85
   parallaxMultiplierY: 0.4
+=======
+  parallaxMultiplierX: 0.32
+  parallaxMultiplierY: 0.2
+>>>>>>> Stashed changes
 --- !u!1 &962293628
 GameObject:
   m_ObjectHideFlags: 0
@@ -11711,8 +11729,59 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.8
   parallaxMultiplierY: 0.2
+=======
+  parallaxMultiplierX: 0.26
+  parallaxMultiplierY: 0.2
+--- !u!1 &1006629694
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1006629695}
+  - component: {fileID: 1006629696}
+  m_Layer: 3
+  m_Name: LedgeHitbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1006629695
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006629694}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.654, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 266647524}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1006629696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1006629694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9071c0349bf51f44b1648c9300b4cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canGrab: 0
+  ledgePosition: {x: 0, y: 0}
+>>>>>>> Stashed changes
 --- !u!1 &1035283031
 GameObject:
   m_ObjectHideFlags: 0
@@ -11924,7 +11993,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1006629695}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
 --- !u!1 &1622889769
@@ -12025,7 +12097,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.6
+=======
+  parallaxMultiplierX: 0.35
+>>>>>>> Stashed changes
   parallaxMultiplierY: 0.2
 --- !u!1 &1668192008
 GameObject:
@@ -12125,8 +12201,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 1035283034}
+<<<<<<< Updated upstream
   parallaxMultiplierX: 0.65
   parallaxMultiplierY: 0.4
+=======
+  parallaxMultiplierX: 0.38
+  parallaxMultiplierY: 0.2
+>>>>>>> Stashed changes
 --- !u!1 &2140882960
 GameObject:
   m_ObjectHideFlags: 0

@@ -72,8 +72,10 @@
     <Compile Include="Assets\Scripts\Collectibles\HealthCollectibles.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttack.cs" />
     <Compile Include="Assets\Scripts\Enemies\Enemy.cs" />
+    <Compile Include="Assets\Scripts\Player\LedgeHitbox.cs" />
     <Compile Include="Assets\Scripts\Enemies\ShooterEnemy.cs" />
     <Compile Include="Assets\Scripts\Player\Health\Health.cs" />
+    <Compile Include="Assets\Scripts\Player\Uppercheck.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Enemies\EnemyDmg.cs" />
     <Compile Include="Assets\Scripts\Enemies\FollowingEnemy.cs" />
