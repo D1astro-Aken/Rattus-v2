@@ -21,6 +21,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float wallJumpCooldown;
     private float wallJumpCooldownTimer;
 
+    [Header("Wall Mechanics Cooldown after Ledge")]
+    [SerializeField] private float wallCooldownAfterLedge = 0.2f;
+    private float wallCooldownTimer;
+
     [Header("Dash Mechanics")]
     [SerializeField] private float dashDistance;
     [SerializeField] private float dashCooldown;
@@ -28,14 +32,18 @@ public class PlayerMovement : MonoBehaviour
     private bool isDashing;
 
     [Header("Ledge Grab")]
-    [SerializeField] private LayerMask ledgeLayer;
-    [SerializeField] private Vector2 ledgeCheckOffset;
-    [SerializeField] private float ledgeCheckRadius = 0.1f;
-    [SerializeField] private float ledgeJumpBackDistance = 0.5f; // kolik se hráè odtlaèí dozadu
+    [SerializeField] private float ledgeJumpBackDistance = 0.5f;
     [SerializeField] private float ledgeClimbDuration = 0.5f;
     [SerializeField] private float ledgeJumpPower = 14f;
+    [SerializeField] private float ledgeHangOffsetY = 0.5f;
+    [SerializeField] private float ledgeSnapHorizontalOffset = 0.1f;
+    [SerializeField] private LedgeHitbox ledgeHitbox;
+
+    [SerializeField] private float ledgeGrabCooldown = 0.3f;
+    private float ledgeGrabCooldownTimer;
 
     private bool isGrabbingLedge;
+    private bool hasSnapped;
     private Vector2 ledgePos;
 
     [Header("Layers")]
@@ -51,34 +59,39 @@ public class PlayerMovement : MonoBehaviour
     private BoxCollider2D boxCollider;
     private float horizontalInput;
 
-    private float defaultGravityScale; // uložíme pùvodní gravitaci
-    private float lastFacingDirection = 1f; // sleduje smìr pohledu
+    private float defaultGravityScale;
+    private float lastFacingDirection = 1f;
 
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
-        defaultGravityScale = body.gravityScale; // uložíme pùvodní hodnotu
+        defaultGravityScale = body.gravityScale;
     }
 
     private void Update()
     {
         horizontalInput = Input.GetAxis("Horizontal");
 
-        // Flip player
-        if (horizontalInput > 0.01f)
-            transform.localScale = Vector3.one;
-        else if (horizontalInput < -0.01f)
-            transform.localScale = new Vector3(-1, 1, 1);
-
-        // --- Zrušení ledge grab pøi otoèení ---
-        float currentFacing = Mathf.Sign(transform.localScale.x);
-        if (isGrabbingLedge && currentFacing != lastFacingDirection)
+        // Flip player – pouze pokud NEjsme na ledge
+        if (!isGrabbingLedge)
         {
-            ReleaseLedge();
+            if (horizontalInput > 0.01f)
+                transform.localScale = Vector3.one;
+            else if (horizontalInput < -0.01f)
+                transform.localScale = new Vector3(-1, 1, 1);
+
+            lastFacingDirection = Mathf.Sign(transform.localScale.x);
         }
-        lastFacingDirection = currentFacing;
+        else
+        {
+            // Uvolnit ledge grab pokud hráè zmáèkne opaèný smìr
+            if (horizontalInput != 0 && Mathf.Sign(horizontalInput) != lastFacingDirection)
+            {
+                ReleaseLedge();
+            }
+        }
 
         // Animator params
         anim.SetBool("run", horizontalInput != 0);
@@ -86,9 +99,11 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("onwall", onWall());
 
         // --- LEDGE GRAB CHECK ---
-        if (onWall() && !isGrounded() && !isGrabbingLedge)
+        if (!isGrounded() && !isGrabbingLedge && ledgeHitbox.canGrab &&
+            ledgeHitbox.upperCheck != null && ledgeHitbox.upperCheck.isClear &&
+            !hasSnapped && ledgeGrabCooldownTimer <= 0)
         {
-            CheckForLedge();
+            StartLedgeGrab(ledgeHitbox.ledgePosition);
         }
 
         if (isGrabbingLedge)
@@ -97,16 +112,29 @@ public class PlayerMovement : MonoBehaviour
             body.gravityScale = 0;
             anim.SetBool("ledgeGrab", true);
 
-            // Climb nahoru
+            // Snap hráèe jednou se bezpeèným horizontálním offsetem
+            if (!hasSnapped)
+            {
+                float direction = Mathf.Sign(lastFacingDirection) * -1;
+                Vector2 snapPosition = new Vector2(
+                    ledgeHitbox.ledgePosition.x + direction * ledgeSnapHorizontalOffset,
+                    ledgeHitbox.ledgePosition.y - ledgeHangOffsetY
+                );
+                transform.position = snapPosition;
+                hasSnapped = true;
+            }
+
+            // Climb, jump, drop
             if (Input.GetKeyDown(KeyCode.W))
                 StartCoroutine(LedgeClimb());
 
-            // Jump nahoru (upravená výška, normální animace)
             if (Input.GetKeyDown(KeyCode.Space))
                 LedgeJump();
 
-            // Pustit se dolù
             if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+                ReleaseLedge();
+
+            if (!ledgeHitbox.canGrab)
                 ReleaseLedge();
 
             return; // blokuje ostatní pohyb
@@ -120,11 +148,9 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
             Dash();
 
-        // Variable jump height
         if (Input.GetKeyUp(KeyCode.Space) && body.velocity.y > 0)
             body.velocity = new Vector2(body.velocity.x, body.velocity.y / 2);
 
-        // Regular movement
         if (!isDashing)
         {
             body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
@@ -144,6 +170,12 @@ public class PlayerMovement : MonoBehaviour
 
         if (wallJumpCooldownTimer > 0)
             wallJumpCooldownTimer -= Time.deltaTime;
+
+        if (ledgeGrabCooldownTimer > 0)
+            ledgeGrabCooldownTimer -= Time.deltaTime;
+
+        if (wallCooldownTimer > 0)
+            wallCooldownTimer -= Time.deltaTime;
     }
 
     private void Jump()
@@ -152,14 +184,12 @@ public class PlayerMovement : MonoBehaviour
 
         SoundManager.instance.PlaySound(jumpSound);
 
-        if (onWall() && wallJumpCooldownTimer <= 0)
+        if (onWall() && wallJumpCooldownTimer <= 0 && wallCooldownTimer <= 0)
             WallJump();
         else
         {
             if (isGrounded() || coyoteCounter > 0)
-            {
                 body.velocity = new Vector2(body.velocity.x, jumpPower);
-            }
             else if (jumpCounter > 0)
             {
                 body.velocity = new Vector2(body.velocity.x, jumpPower);
@@ -174,6 +204,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void WallJump()
     {
+        if (wallCooldownTimer > 0) return; // nelze bìhem cooldownu
+
         float wallDirection = -Mathf.Sign(transform.localScale.x);
         body.velocity = new Vector2(wallDirection * wallJumpX, wallJumpY);
         wallJumpCooldownTimer = wallJumpCooldown;
@@ -207,16 +239,14 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // --- LEDGE FUNCTIONS ---
-    private void CheckForLedge()
+    private void StartLedgeGrab(Vector2 pos)
     {
-        Vector2 checkPos = (Vector2)transform.position + ledgeCheckOffset;
-        Collider2D ledge = Physics2D.OverlapCircle(checkPos, ledgeCheckRadius, ledgeLayer);
+        isGrabbingLedge = true;
+        ledgePos = pos;
+        hasSnapped = false;
 
-        if (ledge != null)
-        {
-            isGrabbingLedge = true;
-            ledgePos = ledge.transform.position;
-        }
+        if (ledgeHitbox.upperCheck != null)
+            ledgeHitbox.upperCheck.gameObject.SetActive(false);
     }
 
     private IEnumerator LedgeClimb()
@@ -228,6 +258,13 @@ public class PlayerMovement : MonoBehaviour
         isGrabbingLedge = false;
         body.gravityScale = defaultGravityScale;
         anim.SetBool("ledgeGrab", false);
+
+        if (ledgeHitbox.upperCheck != null)
+            ledgeHitbox.upperCheck.gameObject.SetActive(true);
+
+        hasSnapped = false;
+        ledgeGrabCooldownTimer = ledgeGrabCooldown;
+        wallCooldownTimer = wallCooldownAfterLedge;
     }
 
     private void LedgeJump()
@@ -236,23 +273,34 @@ public class PlayerMovement : MonoBehaviour
         body.gravityScale = defaultGravityScale;
         anim.SetBool("ledgeGrab", false);
 
-        // Posun hráèe trochu dozadu (proti smìru zdi)
+        if (ledgeHitbox.upperCheck != null)
+            ledgeHitbox.upperCheck.gameObject.SetActive(true);
+
+        hasSnapped = false;
+
         float pushDirection = -Mathf.Sign(transform.localScale.x);
         transform.position = new Vector2(transform.position.x + pushDirection * ledgeJumpBackDistance, transform.position.y);
 
-        // Upravený jump nahoru
         body.velocity = new Vector2(body.velocity.x, ledgeJumpPower);
-
-        // Spustí normální jump animaci
         anim.SetTrigger("jump");
-    }
 
+        ledgeGrabCooldownTimer = ledgeGrabCooldown;
+        wallCooldownTimer = wallCooldownAfterLedge;
+    }
 
     private void ReleaseLedge()
     {
         isGrabbingLedge = false;
         body.gravityScale = defaultGravityScale;
         anim.SetBool("ledgeGrab", false);
+
+        if (ledgeHitbox.upperCheck != null)
+            ledgeHitbox.upperCheck.gameObject.SetActive(true);
+
+        hasSnapped = false;
+
+        ledgeGrabCooldownTimer = ledgeGrabCooldown;
+        wallCooldownTimer = wallCooldownAfterLedge;
     }
 
     // --- COLLISION CHECKS ---
@@ -285,13 +333,5 @@ public class PlayerMovement : MonoBehaviour
     public bool canAttack()
     {
         return horizontalInput == 0 && isGrounded() && !onWall();
-    }
-
-    // --- DEBUG GIZMOS ---
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.cyan;
-        Vector2 checkPos = (Vector2)transform.position + ledgeCheckOffset;
-        Gizmos.DrawWireSphere(checkPos, ledgeCheckRadius);
     }
 }
