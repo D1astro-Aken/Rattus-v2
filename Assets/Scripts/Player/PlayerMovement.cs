@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -42,6 +42,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float ledgeGrabCooldown = 0.3f;
     private float ledgeGrabCooldownTimer;
 
+    [Header("Ledge Push Off")]
+    [SerializeField] private float ledgePushX = 8f;
+    [SerializeField] private float ledgePushY = 10f;
+
     private bool isGrabbingLedge;
     private bool hasSnapped;
     private Vector2 ledgePos;
@@ -74,7 +78,7 @@ public class PlayerMovement : MonoBehaviour
     {
         horizontalInput = Input.GetAxis("Horizontal");
 
-        // Flip player – pouze pokud NEjsme na ledge
+        // Flip player â€“ pouze pokud NEjsme na ledge
         if (!isGrabbingLedge)
         {
             if (horizontalInput > 0.01f)
@@ -86,10 +90,18 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            // Uvolnit ledge grab pokud hráè zmáèkne opaèný smìr
+            // Uvolnit ledge grab pokud hrÃ¡Ä zmÃ¡Äkne opaÄnÃ½ smÄ›r â†’ PUSH OFF
             if (horizontalInput != 0 && Mathf.Sign(horizontalInput) != lastFacingDirection)
             {
+                float pushDir = Mathf.Sign(horizontalInput);
+
                 ReleaseLedge();
+
+                // --- LEDGE PUSH JUMP ---
+                body.velocity = new Vector2(pushDir * ledgePushX, ledgePushY);
+                wallJumpCooldownTimer = wallJumpCooldown; // sdÃ­lÃ­ cooldown s wall jumpem
+                StartCoroutine(DisableInputTemporarily(0.2f));
+                anim.SetTrigger("jump");
             }
         }
 
@@ -112,7 +124,7 @@ public class PlayerMovement : MonoBehaviour
             body.gravityScale = 0;
             anim.SetBool("ledgeGrab", true);
 
-            // Snap hráèe jednou se bezpeèným horizontálním offsetem
+            // Snap hrÃ¡Äe jednou se bezpeÄnÃ½m horizontÃ¡lnÃ­m offsetem
             if (!hasSnapped)
             {
                 float direction = Mathf.Sign(lastFacingDirection) * -1;
@@ -137,7 +149,7 @@ public class PlayerMovement : MonoBehaviour
             if (!ledgeHitbox.canGrab)
                 ReleaseLedge();
 
-            return; // blokuje ostatní pohyb
+            return; // blokuje ostatnÃ­ pohyb
         }
 
         // Handle jumping
@@ -204,7 +216,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void WallJump()
     {
-        if (wallCooldownTimer > 0) return; // nelze bìhem cooldownu
+        if (wallCooldownTimer > 0) return; // nelze bÄ›hem cooldownu
 
         float wallDirection = -Mathf.Sign(transform.localScale.x);
         body.velocity = new Vector2(wallDirection * wallJumpX, wallJumpY);
