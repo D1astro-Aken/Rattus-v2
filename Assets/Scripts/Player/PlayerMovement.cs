@@ -53,6 +53,16 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float stepHeight = 0.3f; // Maximální výška schodu
     [SerializeField] private float stepCheckDistance = 0.1f; // Vzdálenost pro kontrolu schodu
 
+    [Header("Improved Jump Mechanics")]
+    [SerializeField] private float fallGravityMultiplier = 2.5f; // Rychlejší pád
+    [SerializeField] private float lowJumpMultiplier = 2f; // Rychlejší pád při krátkém stisku
+    [SerializeField] private float jumpBufferTime = 0.1f; // Buffer pro skok
+    [SerializeField] private float maxJumpTime = 0.35f; // Maximální doba držení skoku
+    
+    private float jumpBufferCounter;
+    private float jumpTimeCounter;
+    private bool isJumping;
+
     [Header("Layers")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
@@ -196,16 +206,64 @@ public class PlayerMovement : MonoBehaviour
             return; // blokuje ostatní pohyb
         }
 
-        // Handle jumping
+        // Handle jumping with buffer and variable height
         if (Input.GetKeyDown(KeyCode.Space))
-            Jump();
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
 
-        // Handle dashing
+        // Jump buffer logic
+        if (jumpBufferCounter > 0 && (isGrounded() || coyoteCounter > 0 || jumpCounter > 0))
+        {
+            Jump();
+            jumpBufferCounter = 0;
+        }
+
+        // Variable jump height - kratší skok při uvolnění tlačítka
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            if (body.velocity.y > 0)
+            {
+                body.velocity = new Vector2(body.velocity.x, body.velocity.y * 0.5f);
+            }
+            isJumping = false;
+        }
+
+        // Pokračování v skoku při držení tlačítka
+        if (Input.GetKey(KeyCode.Space) && isJumping && jumpTimeCounter > 0)
+        {
+            // Postupně snižuj sílu skoku pro plynulejší pocit
+            float jumpMultiplier = jumpTimeCounter / maxJumpTime;
+            jumpTimeCounter -= Time.deltaTime;
+        }
+        else if (isJumping)
+        {
+            isJumping = false;
+        }
+
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
             Dash();
 
-        if (Input.GetKeyUp(KeyCode.Space) && body.velocity.y > 0)
-            body.velocity = new Vector2(body.velocity.x, body.velocity.y / 2);
+        // Dynamic gravity for better jump feel
+        if (body.velocity.y < 0)
+        {
+            // Rychlejší pád
+            body.gravityScale = defaultGravityScale * fallGravityMultiplier;
+        }
+        else if (body.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
+        {
+            // Rychlejší pád při uvolnění tlačítka během vzletu
+            body.gravityScale = defaultGravityScale * lowJumpMultiplier;
+        }
+        else
+        {
+            // Normální gravitace během vzletu při držení tlačítka
+            body.gravityScale = defaultGravityScale;
+        }
 
         if (!isDashing)
         {
@@ -256,11 +314,17 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             if (isGrounded() || coyoteCounter > 0)
+            {
                 body.velocity = new Vector2(body.velocity.x, jumpPower);
+                isJumping = true;
+                jumpTimeCounter = maxJumpTime;
+            }
             else if (jumpCounter > 0)
             {
                 body.velocity = new Vector2(body.velocity.x, jumpPower);
                 jumpCounter--;
+                isJumping = true;
+                jumpTimeCounter = maxJumpTime;
             }
 
             coyoteCounter = 0;

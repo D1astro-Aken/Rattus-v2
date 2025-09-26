@@ -151,13 +151,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9071c0349bf51f44b1648c9300b4cc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ledgeDetectionWidth: 0.2
-  ledgeDetectionHeight: 0.1
-  forwardCheckDistance: 0.4
-  upwardCheckDistance: 0.3
+  ledgeDetectionWidth: 0.26
+  ledgeDetectionHeight: 0.38
+  forwardCheckDistance: 0.22
+  upwardCheckDistance: 0.78
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 128
   detectionRate: 0.1
 --- !u!4 &111216414
 Transform:
@@ -168,7 +171,7 @@ Transform:
   m_GameObject: {fileID: 111216412}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.935, y: -0.433, z: 0}
+  m_LocalPosition: {x: 0.64, y: -0.44, z: 0}
   m_LocalScale: {x: 0.67198014, y: 0.6359394, z: 0.97643}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -23740,7 +23743,11 @@ PrefabInstance:
       objectReference: {fileID: 111216413}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: ledgeHangOffsetY
-      value: 0.21
+      value: -28.46
+      objectReference: {fileID: 0}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: ledgeVerticalOffset
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: ledgeSnapHorizontalOffset
@@ -23757,6 +23764,14 @@ PrefabInstance:
     - target: {fileID: 6136394438619036857, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_SortingLayerID
       value: -910200219
+      objectReference: {fileID: 0}
+    - target: {fileID: 6144246880716256729, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: m_Size.x
+      value: 0.84977627
+      objectReference: {fileID: 0}
+    - target: {fileID: 6144246880716256729, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: m_Offset.x
+      value: -0.15387774
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.x
