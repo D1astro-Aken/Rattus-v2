@@ -49,6 +49,10 @@ public class PlayerMovement : MonoBehaviour
     private bool hasSnapped;
     private Vector2 ledgePos;
 
+    [Header("Step-Up Mechanism")]
+    [SerializeField] private float stepHeight = 0.3f; // Maximální výška schodu
+    [SerializeField] private float stepCheckDistance = 0.1f; // Vzdálenost pro kontrolu schodu
+
     [Header("Layers")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
@@ -205,7 +209,16 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isDashing)
         {
-            body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
+            // Původní horizontální pohyb s step-up mechanikou
+            Vector2 targetVelocity = new Vector2(horizontalInput * speed, body.velocity.y);
+            
+            // Pokud se hráč pohybuje horizontálně a je na zemi, zkontroluj step-up
+            if (horizontalInput != 0 && isGrounded())
+            {
+                targetVelocity = HandleStepUp(targetVelocity);
+            }
+            
+            body.velocity = targetVelocity;
 
             if (isGrounded())
             {
@@ -351,6 +364,62 @@ public class PlayerMovement : MonoBehaviour
         wallCooldownTimer = wallCooldownAfterLedge;
 
         ledgeHitbox.ResetLedge(); // 🔹 odemkneme
+    }
+
+    // --- STEP-UP MECHANISM ---
+    private Vector2 HandleStepUp(Vector2 targetVelocity)
+    {
+        float moveDirection = Mathf.Sign(horizontalInput);
+        
+        // Zkontroluj, zda je před hráčem překážka na úrovni nohou
+        Vector2 frontCheck = new Vector2(
+            boxCollider.bounds.center.x + (boxCollider.bounds.size.x * 0.5f + stepCheckDistance) * moveDirection,
+            boxCollider.bounds.center.y - boxCollider.bounds.size.y * 0.3f
+        );
+        
+        RaycastHit2D frontHit = Physics2D.Raycast(frontCheck, Vector2.right * moveDirection, stepCheckDistance, groundLayer);
+        
+        if (frontHit.collider != null)
+        {
+            // Zkontroluj, zda je nad překážkou volné místo pro step-up
+            Vector2 stepUpCheck = new Vector2(
+                frontCheck.x + stepCheckDistance * moveDirection,
+                boxCollider.bounds.center.y + stepHeight
+            );
+            
+            RaycastHit2D stepUpHit = Physics2D.Raycast(stepUpCheck, Vector2.down, stepHeight + 0.1f, groundLayer);
+            
+            if (stepUpHit.collider != null)
+            {
+                float stepUpHeight = stepUpCheck.y - stepUpHit.point.y;
+                
+                // Pokud je schod dostatečně malý, automaticky ho překonej
+                if (stepUpHeight <= stepHeight && stepUpHeight > 0.05f)
+                {
+                    // Zkontroluj, zda je nad step-up pozicí dostatek místa pro hráče
+                    Vector2 headCheck = new Vector2(
+                        stepUpHit.point.x,
+                        stepUpHit.point.y + boxCollider.bounds.size.y
+                    );
+                    
+                    Collider2D headCollision = Physics2D.OverlapCircle(headCheck, 0.1f, groundLayer);
+                    
+                    if (headCollision == null)
+                    {
+                        // Proveď step-up - pozvedni hráče na schod
+                        transform.position = new Vector2(
+                            transform.position.x,
+                            stepUpHit.point.y + boxCollider.bounds.size.y * 0.5f + 0.05f
+                        );
+                        
+                        // Zachovej horizontální rychlost
+                        return targetVelocity;
+                    }
+                }
+            }
+        }
+        
+        return targetVelocity;
     }
 
     // --- COLLISION CHECKS ---
