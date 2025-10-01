@@ -58,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float lowJumpMultiplier = 2f; // Rychlejší pád při krátkém stisku
     [SerializeField] private float jumpBufferTime = 0.1f; // Buffer pro skok
     [SerializeField] private float maxJumpTime = 0.35f; // Maximální doba držení skoku
+    [SerializeField] private float maxFallSpeed = 15f; // Maximální rychlost pádu
     
     private float jumpBufferCounter;
     private float jumpTimeCounter;
@@ -216,8 +217,8 @@ public class PlayerMovement : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
-        // Jump buffer logic
-        if (jumpBufferCounter > 0 && (isGrounded() || coyoteCounter > 0 || jumpCounter > 0))
+        // Jump buffer logic - včetně wall jump
+        if (jumpBufferCounter > 0 && (isGrounded() || coyoteCounter > 0 || jumpCounter > 0 || onWall()))
         {
             Jump();
             jumpBufferCounter = 0;
@@ -265,6 +266,12 @@ public class PlayerMovement : MonoBehaviour
             body.gravityScale = defaultGravityScale;
         }
 
+        // Omezení maximální rychlosti pádu
+        if (body.velocity.y < -maxFallSpeed)
+        {
+            body.velocity = new Vector2(body.velocity.x, -maxFallSpeed);
+        }
+
         if (!isDashing)
         {
             // Původní horizontální pohyb s step-up mechanikou
@@ -303,30 +310,25 @@ public class PlayerMovement : MonoBehaviour
 
     private void Jump()
     {
-        if (coyoteCounter <= 0 && !onWall() && jumpCounter <= 0) return;
-
         // Check if SoundManager exists before trying to play sound
         if (SoundManager.instance != null && jumpSound != null)
             SoundManager.instance.PlaySound(jumpSound);
 
         if (onWall() && wallJumpCooldownTimer <= 0 && wallCooldownTimer <= 0)
             WallJump();
-        else
+        else if (isGrounded() || coyoteCounter > 0)
         {
-            if (isGrounded() || coyoteCounter > 0)
-            {
-                body.velocity = new Vector2(body.velocity.x, jumpPower);
-                isJumping = true;
-                jumpTimeCounter = maxJumpTime;
-            }
-            else if (jumpCounter > 0)
-            {
-                body.velocity = new Vector2(body.velocity.x, jumpPower);
-                jumpCounter--;
-                isJumping = true;
-                jumpTimeCounter = maxJumpTime;
-            }
-
+            body.velocity = new Vector2(body.velocity.x, jumpPower);
+            isJumping = true;
+            jumpTimeCounter = maxJumpTime;
+            coyoteCounter = 0;
+        }
+        else if (jumpCounter > 0)
+        {
+            body.velocity = new Vector2(body.velocity.x, jumpPower);
+            jumpCounter--;
+            isJumping = true;
+            jumpTimeCounter = maxJumpTime;
             coyoteCounter = 0;
         }
 
@@ -342,8 +344,17 @@ public class PlayerMovement : MonoBehaviour
         float wallDirection = -Mathf.Sign(transform.localScale.x);
         body.velocity = new Vector2(wallDirection * wallJumpX, wallJumpY);
         wallJumpCooldownTimer = wallJumpCooldown;
+        
+        // Reset jump variables for wall jump
+        isJumping = true;
+        jumpTimeCounter = maxJumpTime;
+        jumpBufferCounter = 0;
+        
         StartCoroutine(DisableInputTemporarily(0.2f));
-        anim.SetTrigger("jump");
+        
+        // Add null check for animator
+        if (anim != null)
+            anim.SetTrigger("jump");
     }
 
     private IEnumerator DisableInputTemporarily(float duration)
