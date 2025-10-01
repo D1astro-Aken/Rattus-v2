@@ -122,61 +122,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &111216412
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 111216414}
-  - component: {fileID: 111216413}
-  m_Layer: 3
-  m_Name: LedgeHitbox
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &111216413
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 111216412}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9071c0349bf51f44b1648c9300b4cc1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ledgeDetectionWidth: 0.26
-  ledgeDetectionHeight: 0.38
-  forwardCheckDistance: 0.22
-  upwardCheckDistance: 0.78
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  wallLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  detectionRate: 0.1
---- !u!4 &111216414
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 111216412}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.64, y: -0.44, z: 0}
-  m_LocalScale: {x: 0.67198014, y: 0.6359394, z: 0.97643}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 266647524}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &113419728
 GameObject:
   m_ObjectHideFlags: 0
@@ -23737,42 +23682,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: ledgeHitbox
-      value: 
-      objectReference: {fileID: 111216413}
-    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: ledgeHangOffsetY
-      value: -28.46
-      objectReference: {fileID: 0}
-    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: ledgeVerticalOffset
-      value: 0.2
-      objectReference: {fileID: 0}
-    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: ledgeSnapHorizontalOffset
-      value: 0.21
-      objectReference: {fileID: 0}
-    - target: {fileID: 6136394438619036857, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: m_SortingLayer
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 6136394438619036857, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: m_SortingOrder
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 6136394438619036857, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: m_SortingLayerID
-      value: -910200219
-      objectReference: {fileID: 0}
-    - target: {fileID: 6144246880716256729, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: m_Size.x
-      value: 0.84977627
-      objectReference: {fileID: 0}
-    - target: {fileID: 6144246880716256729, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      propertyPath: m_Offset.x
-      value: -0.15387774
-      objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.x
       value: -10.01
@@ -23815,10 +23724,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 111216414}
+    m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
 --- !u!1001 &1512273532
