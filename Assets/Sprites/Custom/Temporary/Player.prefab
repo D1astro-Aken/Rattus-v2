@@ -274,7 +274,8 @@ MonoBehaviour:
   dashDistance: 10
   dashCooldown: 1
   ledgeJumpBackDistance: 0.5
-  ledgeClimbDuration: 0.5
+  ledgeAnimationDuration: 0.68
+  ledgeClimbDuration: 3.2
   ledgeJumpPower: 14
   ledgeHangOffsetY: -28.46
   ledgeSnapHorizontalOffset: 0.21

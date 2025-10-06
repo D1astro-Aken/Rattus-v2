@@ -33,8 +33,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ledge Grab")]
     [SerializeField] private float ledgeJumpBackDistance = 0.5f;
-    [SerializeField] private float ledgeAnimationDuration = 0.3f; // Duration for animation to play
-    [SerializeField] private float ledgeClimbDuration = 0.4f; // Rychlejší climb
+    [SerializeField] private float ledgeAnimationDuration = 0.3f; // Duration for animation to play (fallback only)
     [SerializeField] private float ledgeJumpPower = 16f; // Silnější jump
     [SerializeField] private float ledgeHangOffsetY = 0.2f; // Menší offset - blíže k ledge
     [SerializeField] private float ledgeSnapHorizontalOffset = 0.05f; // Ještě přesnější snap
@@ -49,6 +48,7 @@ public class PlayerMovement : MonoBehaviour
     public bool IsGrabbingLedge => isGrabbingLedge;
     private bool hasSnapped;
     private Vector2 ledgePos;
+    private bool isClimbingLedge; // Flag to prevent grounded override during climb animation
 
     [Header("Step-Up Mechanism")]
     [SerializeField] private float stepHeight = 0.3f; // Maximální výška schodu
@@ -114,7 +114,10 @@ public class PlayerMovement : MonoBehaviour
 
         // Animator params
         anim.SetBool("run", horizontalInput != 0);
-        anim.SetBool("grounded", isGrounded());
+        if (!isClimbingLedge) // Don't override grounded during ledge climb animation
+        {
+            anim.SetBool("grounded", isGrounded());
+        }
         anim.SetBool("onwall", onWall());
 
         // --- LEDGE GRAB CHECK ---
@@ -131,7 +134,12 @@ public class PlayerMovement : MonoBehaviour
         {
             body.velocity = Vector2.zero;
             body.gravityScale = 0;
-            anim.SetBool("ledgeGrab", true);
+            
+            // Don't set ledgeGrab to true during climb animation
+            if (!isClimbingLedge)
+            {
+                anim.SetBool("ledgeGrab", true);
+            }
 
             // Snap player to a precise, consistent position on the ledge
             if (!hasSnapped)
@@ -193,7 +201,7 @@ public class PlayerMovement : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.W))
                 StartCoroutine(LedgeClimb());
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) && !isClimbingLedge)
                 LedgeJump();
 
             if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
@@ -209,7 +217,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Handle jumping with buffer and variable height
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && !isClimbingLedge)
         {
             jumpBufferCounter = jumpBufferTime;
         }
@@ -219,7 +227,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Jump buffer logic - včetně wall jump
-        if (jumpBufferCounter > 0 && (isGrounded() || coyoteCounter > 0 || jumpCounter > 0 || onWall()))
+        if (jumpBufferCounter > 0 && (isGrounded() || coyoteCounter > 0 || jumpCounter > 0 || onWall()) && !isClimbingLedge)
         {
             Jump();
             jumpBufferCounter = 0;
@@ -393,20 +401,64 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator LedgeClimb()
     {
-        // Trigger the climb animation for visual feedback
+        Debug.Log("Starting LedgeClimb coroutine");
+        
+        // Set climbing flag to prevent grounded override
+        isClimbingLedge = true;
+        
+        // Set animator parameter to prevent jump animation during climb
+        anim.SetBool("isClimbing", true);
+        
+        // Check current animator state before making changes
+        Debug.Log($"Initial state: {anim.GetCurrentAnimatorStateInfo(0).IsName("LedgeGrab")}");
+        Debug.Log($"Initial state name hash: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
+        
+        // Exit ledgeGrab state but keep grounded true to prevent airborne animation
+        anim.SetBool("ledgeGrab", false);
+        // Don't set grounded to false - this would trigger airborne animation
+        Debug.Log("Set ledgeGrab to false, keeping grounded state");
+        
+        // Trigger the climb animation
         anim.SetTrigger("ledgeClimb");
-        yield return new WaitForSeconds(ledgeClimbDuration);
-
+        Debug.Log("Triggered ledgeClimb animation");
+        
+        // Check if trigger was set (Note: triggers are consumed immediately, so this might not work)
+        Debug.Log($"Checking animator parameters after trigger");
+        
+        // Force animator update
+        anim.Update(0f);
+        yield return null;
+        
+        // Check state after trigger
+        Debug.Log($"State after trigger: {anim.GetCurrentAnimatorStateInfo(0).IsName("Rattus-LedgeUp")}");
+        Debug.Log($"State hash after trigger: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
+        Debug.Log($"Current state full name: {anim.GetCurrentAnimatorStateInfo(0).fullPathHash}");
+        
+        Debug.Log("Using simple timer approach - animation should play now");
+        
+        // Wait for the animation duration (this allows the animation to play)
+        yield return new WaitForSeconds(ledgeAnimationDuration);
+        
+        Debug.Log("Animation time completed, moving character");
+        
+        // Move the character after animation time
         transform.position = new Vector2(ledgePos.x, ledgePos.y + 1f);
         isGrabbingLedge = false;
         body.gravityScale = defaultGravityScale;
-        anim.SetBool("ledgeGrab", false);
+        
+        // Reset climbing flag and restore normal grounded behavior
+        isClimbingLedge = false;
+        anim.SetBool("grounded", isGrounded());
+        
+        // Reset animator climbing parameter
+        anim.SetBool("isClimbing", false);
 
         hasSnapped = false;
         ledgeGrabCooldownTimer = ledgeGrabCooldown;
         wallCooldownTimer = wallCooldownAfterLedge;
 
-        ledgeHitbox.ResetLedge(); // 🔹 odemkneme pro další grab
+        ledgeHitbox.ResetLedge();
+        Debug.Log("LedgeClimb completed");
     }
 
     private void LedgeJump()

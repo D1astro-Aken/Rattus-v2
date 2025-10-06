@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LedgeHitbox : MonoBehaviour
@@ -12,7 +12,7 @@ public class LedgeHitbox : MonoBehaviour
     [SerializeField] private LayerMask wallLayer;
     
     [Header("Detection Frequency")]
-    [SerializeField] private float detectionRate = 0.02f; // Rychlejší detekce pro lepší responzivnost
+    [SerializeField] private float detectionRate = 0.01f; // Ještě rychlejší detekce pro lepší responzivnost
 
     public bool canGrab { get; private set; }
     public Vector2 ledgePosition { get; private set; }
@@ -48,8 +48,7 @@ public class LedgeHitbox : MonoBehaviour
         float direction = Mathf.Sign(transform.root.localScale.x);
         Vector2 playerPos = transform.position;
 
-        // Debug logging
-        Debug.Log($"Ledge Detection - Direction: {direction}, PlayerPos: {playerPos}, CanGrab: {canGrab}");
+        // Debug logging removed
 
         // Try both directions if the character is falling straight down
         float[] directionsToCheck = { direction, -direction };
@@ -120,7 +119,6 @@ public class LedgeHitbox : MonoBehaviour
             ledgePosition = forwardCheckPos + Vector2.up * (ledgeDetectionHeight * 0.5f);
         }
         
-        Debug.Log($"Ledge found in direction {direction} at position {ledgePosition}");
         return true;
     }
 

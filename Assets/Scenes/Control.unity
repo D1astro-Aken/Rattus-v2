@@ -23684,19 +23684,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: ledgeClimbDuration
-      value: 3.2
+      value: 0.52
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: ledgeAnimationDuration
-      value: 0.68
+      value: 0.44
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.01
+      value: -13.86
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.94
+      value: 9.3
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.z
