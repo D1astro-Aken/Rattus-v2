@@ -10,7 +10,7 @@ public class Projectile : MonoBehaviour
 
     private void Start()
     {
-        Destroy(gameObject, lifeTime); // støela zmizí po urèité dobì
+        Destroy(gameObject, lifeTime); // stï¿½ela zmizï¿½ po urï¿½itï¿½ dobï¿½
     }
 
     public void SetDirection(Vector2 dir)
@@ -22,7 +22,7 @@ public class Projectile : MonoBehaviour
     {
         transform.Translate(direction * speed * Time.deltaTime);
 
-        // volitelnì: otoèení sprite smìrem pohybu
+        // volitelnï¿½: otoï¿½enï¿½ sprite smï¿½rem pohybu
         if (direction.x < 0)
             transform.localScale = new Vector3(-1, 1, 1);
         else
@@ -31,16 +31,19 @@ public class Projectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // sem dáš logiku, co se stane pøi zásahu (damage hráèe, znièení projektilu, atd.)
         if (collision.CompareTag("Player"))
         {
-            // napø. volání damage na hráèe
-            // collision.GetComponent<PlayerHealth>()?.TakeDamage(damage);
+            // ZpÅ¯sob damage hrÃ¡Äi
+            Health playerHealth = collision.GetComponent<Health>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(damage);
+            }
 
-            Destroy(gameObject); // znièí projektil po zásahu
+            Destroy(gameObject); // zniÄi projektil po zÃ¡sahu
         }
 
-        if (collision.CompareTag("Ground")) // aby se støela znièila o zem
+        if (collision.CompareTag("Ground") || collision.CompareTag("Wall")) // aby se stÅ™ela zniÄila o pÅ™ekÃ¡Å¾ky
         {
             Destroy(gameObject);
         }

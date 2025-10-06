@@ -1,27 +1,27 @@
 using UnityEngine;
 using System.Collections;
 
-public class ShooterEnemy : MonsterPatrol
+public class AntSpitter : MonsterPatrol
 {
-    [Header("Shooter Settings")]
+    [Header("Spitting Settings")]
     public Transform playerTransform;
-    public float shootingDistance = 6f;
-    public float shootCooldown = 2f;
+    public float spittingDistance = 6f;
+    public float spitCooldown = 2.5f;
     public GameObject projectilePrefab;
-    public Transform firePoint;
+    public Transform spitPoint;
     
     [Header("Targeting Settings")]
     public float projectileSpeed = 8f;
     public bool predictPlayerMovement = true;
-    public float predictionTime = 0.3f;
+    public float predictionTime = 0.5f;
     
     [Header("Burst Settings")]
-    public bool useBurstFire = false;
-    public int burstCount = 2;
-    public float burstDelay = 0.3f;
+    public bool useBurstFire = true;
+    public int burstCount = 3;
+    public float burstDelay = 0.2f;
 
-    private float lastShootTime = -Mathf.Infinity;
-    private bool isShooting = false;
+    private float lastSpitTime = -Mathf.Infinity;
+    private bool isSpitting = false;
     private Rigidbody2D playerRb;
 
     protected override void Start()
@@ -56,44 +56,45 @@ public class ShooterEnemy : MonsterPatrol
 
     protected override void Update()
     {
-        if (isShooting) return; // Během střelby neprovádíme patrol
+        if (isSpitting) return; // Během střelby neprovádíme patrol
 
         if (playerTransform != null && IsPlayerInRange())
         {
             FacePlayer();
 
-            if (CanShoot())
+            if (CanSpit())
             {
                 if (useBurstFire)
                 {
-                    StartCoroutine(BurstShoot());
+                    StartCoroutine(BurstSpit());
                 }
                 else
                 {
-                    Shoot();
+                    Spit();
                 }
-                lastShootTime = Time.time;
+                lastSpitTime = Time.time;
             }
 
+            // Nastav animaci střelby
             if (anim != null)
-                anim.SetBool("isShooting", true);
+                anim.SetBool("isSpitting", true);
         }
         else
         {
             base.Update(); // Patrol
             if (anim != null)
-                anim.SetBool("isShooting", false);
+                anim.SetBool("isSpitting", false);
         }
     }
 
     private bool IsPlayerInRange()
     {
-        return Vector2.Distance(transform.position, playerTransform.position) <= shootingDistance;
+        return Vector2.Distance(transform.position, playerTransform.position) <= spittingDistance;
     }
 
-    private bool CanShoot()
+    private bool CanSpit()
     {
-        return Time.time >= lastShootTime + shootCooldown;
+        return Time.time >= lastSpitTime + spitCooldown;
     }
 
     private void FacePlayer()
@@ -105,22 +106,22 @@ public class ShooterEnemy : MonsterPatrol
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
     }
 
-    private void Shoot()
+    private void Spit()
     {
-        if (projectilePrefab != null && firePoint != null)
+        if (projectilePrefab != null && spitPoint != null)
         {
             Vector2 targetDirection = CalculateTargetDirection();
             SpawnProjectile(targetDirection);
         }
     }
 
-    private IEnumerator BurstShoot()
+    private IEnumerator BurstSpit()
     {
-        isShooting = true;
+        isSpitting = true;
 
         for (int i = 0; i < burstCount; i++)
         {
-            if (projectilePrefab != null && firePoint != null)
+            if (projectilePrefab != null && spitPoint != null)
             {
                 Vector2 targetDirection = CalculateTargetDirection();
                 SpawnProjectile(targetDirection);
@@ -132,7 +133,7 @@ public class ShooterEnemy : MonsterPatrol
             }
         }
 
-        isShooting = false;
+        isSpitting = false;
     }
 
     private Vector2 CalculateTargetDirection()
@@ -147,13 +148,13 @@ public class ShooterEnemy : MonsterPatrol
         }
 
         // Vypočítej směr k cílové pozici
-        Vector2 direction = (targetPosition - (Vector2)firePoint.position).normalized;
+        Vector2 direction = (targetPosition - (Vector2)spitPoint.position).normalized;
         return direction;
     }
 
     private void SpawnProjectile(Vector2 direction)
     {
-        GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        GameObject proj = Instantiate(projectilePrefab, spitPoint.position, spitPoint.rotation);
 
         // Nastav směr projektilu
         Projectile projectile = proj.GetComponent<Projectile>();
@@ -175,7 +176,7 @@ public class ShooterEnemy : MonsterPatrol
     {
         // Zobraz dosah střelby
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, shootingDistance);
+        Gizmos.DrawWireSphere(transform.position, spittingDistance);
 
         // Zobraz směr k hráči
         if (playerTransform != null)
@@ -193,11 +194,11 @@ public class ShooterEnemy : MonsterPatrol
             }
         }
 
-        // Zobraz firePoint
-        if (firePoint != null)
+        // Zobraz spitPoint
+        if (spitPoint != null)
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(firePoint.position, 0.2f);
+            Gizmos.DrawWireSphere(spitPoint.position, 0.2f);
         }
     }
 }
