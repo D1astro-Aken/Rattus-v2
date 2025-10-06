@@ -33,6 +33,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ledge Grab")]
     [SerializeField] private float ledgeJumpBackDistance = 0.5f;
+    [SerializeField] private float ledgeAnimationDuration = 0.3f; // Duration for animation to play
     [SerializeField] private float ledgeClimbDuration = 0.4f; // Rychlejší climb
     [SerializeField] private float ledgeJumpPower = 16f; // Silnější jump
     [SerializeField] private float ledgeHangOffsetY = 0.2f; // Menší offset - blíže k ledge
@@ -392,6 +393,7 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator LedgeClimb()
     {
+        // Trigger the climb animation for visual feedback
         anim.SetTrigger("ledgeClimb");
         yield return new WaitForSeconds(ledgeClimbDuration);
 
