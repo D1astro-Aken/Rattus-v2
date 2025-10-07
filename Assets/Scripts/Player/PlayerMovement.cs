@@ -121,12 +121,12 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("onwall", onWall());
 
         // --- LEDGE GRAB CHECK ---
-        Debug.Log($"Ledge Check - Grounded: {isGrounded()}, OnWall: {onWall()}, IsGrabbing: {isGrabbingLedge}, CanGrab: {ledgeHitbox.canGrab}, HasSnapped: {hasSnapped}, Cooldown: {ledgeGrabCooldownTimer}");
+        // Debug.Log($"Ledge Check - Grounded: {isGrounded()}, OnWall: {onWall()}, IsGrabbing: {isGrabbingLedge}, CanGrab: {ledgeHitbox.canGrab}, HasSnapped: {hasSnapped}, Cooldown: {ledgeGrabCooldownTimer}");
         
         if (!isGrounded() && !onWall() && !isGrabbingLedge && ledgeHitbox.canGrab &&
             !hasSnapped && ledgeGrabCooldownTimer <= 0)
         {
-            Debug.Log("Starting ledge grab!");
+            // Debug.Log("Starting ledge grab!");
             StartLedgeGrab(ledgeHitbox.ledgePosition);
         }
 
@@ -209,7 +209,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (!ledgeHitbox.canGrab)
             {
-                Debug.Log("Releasing ledge because canGrab became false!");
+                // Debug.Log("Releasing ledge because canGrab became false!");
                 ReleaseLedge();
             }
 
@@ -401,7 +401,7 @@ public class PlayerMovement : MonoBehaviour
 
     private IEnumerator LedgeClimb()
     {
-        Debug.Log("Starting LedgeClimb coroutine");
+        // Debug.Log("Starting LedgeClimb coroutine");
         
         // Set climbing flag to prevent grounded override
         isClimbingLedge = true;
@@ -410,36 +410,36 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("isClimbing", true);
         
         // Check current animator state before making changes
-        Debug.Log($"Initial state: {anim.GetCurrentAnimatorStateInfo(0).IsName("LedgeGrab")}");
-        Debug.Log($"Initial state name hash: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
+        // Debug.Log($"Initial state: {anim.GetCurrentAnimatorStateInfo(0).IsName("LedgeGrab")}");
+        // Debug.Log($"Initial state name hash: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
         
         // Exit ledgeGrab state but keep grounded true to prevent airborne animation
         anim.SetBool("ledgeGrab", false);
         // Don't set grounded to false - this would trigger airborne animation
-        Debug.Log("Set ledgeGrab to false, keeping grounded state");
+        // Debug.Log("Set ledgeGrab to false, keeping grounded state");
         
         // Trigger the climb animation
         anim.SetTrigger("ledgeClimb");
-        Debug.Log("Triggered ledgeClimb animation");
+        // Debug.Log("Triggered ledgeClimb animation");
         
         // Check if trigger was set (Note: triggers are consumed immediately, so this might not work)
-        Debug.Log($"Checking animator parameters after trigger");
+        // Debug.Log($"Checking animator parameters after trigger");
         
         // Force animator update
         anim.Update(0f);
         yield return null;
         
         // Check state after trigger
-        Debug.Log($"State after trigger: {anim.GetCurrentAnimatorStateInfo(0).IsName("Rattus-LedgeUp")}");
-        Debug.Log($"State hash after trigger: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
-        Debug.Log($"Current state full name: {anim.GetCurrentAnimatorStateInfo(0).fullPathHash}");
+        // Debug.Log($"State after trigger: {anim.GetCurrentAnimatorStateInfo(0).IsName("Rattus-LedgeUp")}");
+        // Debug.Log($"State hash after trigger: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
+        // Debug.Log($"Current state full name: {anim.GetCurrentAnimatorStateInfo(0).fullPathHash}");
         
-        Debug.Log("Using simple timer approach - animation should play now");
+        // Debug.Log("Using simple timer approach - animation should play now");
         
         // Wait for the animation duration (this allows the animation to play)
         yield return new WaitForSeconds(ledgeAnimationDuration);
         
-        Debug.Log("Animation time completed, moving character");
+        // Debug.Log("Animation time completed, moving character");
         
         // Move the character after animation time
         transform.position = new Vector2(ledgePos.x, ledgePos.y + 1f);
@@ -458,7 +458,7 @@ public class PlayerMovement : MonoBehaviour
         wallCooldownTimer = wallCooldownAfterLedge;
 
         ledgeHitbox.ResetLedge();
-        Debug.Log("LedgeClimb completed");
+        // Debug.Log("LedgeClimb completed");
     }
 
     private void LedgeJump()

@@ -19,10 +19,28 @@ public class ShooterEnemy : MonsterPatrol
     public bool useBurstFire = false;
     public int burstCount = 2;
     public float burstDelay = 0.3f;
+    
+    [Header("Projectile Launch Settings")]
+    public float projectileLaunchDelay = 0.5f; // Doba čekání před vypuštěním projektilu
+    
+    [Header("Run Away Settings")]
+    public float runAwayDuration = 2f;
+    public float runAwaySpeed = 4f;
+    public float runAwayDistance = 8f;
 
     private float lastShootTime = -Mathf.Infinity;
     private bool isShooting = false;
     private Rigidbody2D playerRb;
+    
+    // Shooting timer mechanics
+    private bool isShootingLocked = false;
+    private float shootingLockDuration = 1f; // Duration to lock movement during shooting
+    private float shootingLockStartTime;
+    
+    // Run away state tracking
+    private bool isRunningAway = false;
+    private float runAwayStartTime;
+    private Vector2 runAwayDirection;
 
     protected override void Start()
     {
@@ -46,7 +64,7 @@ public class ShooterEnemy : MonsterPatrol
         // Nastav rychlost projektilu v prefabu pokud existuje
         if (projectilePrefab != null)
         {
-            Projectile projComponent = projectilePrefab.GetComponent<Projectile>();
+            Projectiles projComponent = projectilePrefab.GetComponent<Projectiles>();
             if (projComponent != null)
             {
                 projComponent.speed = projectileSpeed;
@@ -56,6 +74,29 @@ public class ShooterEnemy : MonsterPatrol
 
     protected override void Update()
     {
+        // Handle shooting lock timer
+        if (isShootingLocked)
+        {
+            if (Time.time - shootingLockStartTime >= shootingLockDuration)
+            {
+                isShootingLocked = false;
+                isShooting = false;
+            }
+            else
+            {
+                // During shooting lock, only update animations
+                UpdateAnimationStates();
+                return;
+            }
+        }
+        
+        // Handle run away state
+        if (isRunningAway)
+        {
+            HandleRunAway();
+            return;
+        }
+        
         if (isShooting) return; // Během střelby neprovádíme patrol
 
         if (playerTransform != null && IsPlayerInRange())
@@ -73,16 +114,18 @@ public class ShooterEnemy : MonsterPatrol
                     Shoot();
                 }
                 lastShootTime = Time.time;
+                
+                // Start shooting lock
+                StartShootingLock();
             }
 
-            if (anim != null)
-                anim.SetBool("isShooting", true);
+            // Animation states
+            UpdateAnimationStates();
         }
         else
         {
             base.Update(); // Patrol
-            if (anim != null)
-                anim.SetBool("isShooting", false);
+            UpdateAnimationStates();
         }
     }
 
@@ -153,21 +196,89 @@ public class ShooterEnemy : MonsterPatrol
 
     private void SpawnProjectile(Vector2 direction)
     {
-        GameObject proj = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        // Calculate rotation angle towards target direction
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        
+        GameObject proj = Instantiate(projectilePrefab, firePoint.position, rotation);
 
-        // Nastav směr projektilu
-        Projectile projectile = proj.GetComponent<Projectile>();
+        // Nastav směr projektilu a launch delay
+        Projectiles projectile = proj.GetComponent<Projectiles>();
         if (projectile != null)
         {
             projectile.SetDirection(direction);
+            projectile.SetLaunchDelay(projectileLaunchDelay);
         }
 
-        // Alternativně, pokud projektil používá Rigidbody2D
-        Rigidbody2D projRb = proj.GetComponent<Rigidbody2D>();
-        if (projRb != null)
+        // Poznámka: Rigidbody2D velocity se už nenastavuje, protože Projectiles script řídí pohyb
+    }
+
+    // Shooting lock mechanics
+    private void StartShootingLock()
+    {
+        isShootingLocked = true;
+        shootingLockStartTime = Time.time;
+        isShooting = true;
+        
+        // Start coroutine to handle run away after shooting lock
+        StartCoroutine(HandleShootingLockEnd());
+    }
+    
+    private IEnumerator HandleShootingLockEnd()
+    {
+        yield return new WaitForSeconds(shootingLockDuration);
+        
+        // After shooting lock ends, start running away
+        if (!isRunningAway)
         {
-            projRb.velocity = direction * projectileSpeed;
+            StartRunAway();
         }
+    }
+
+    // Run away mechanics
+    private void StartRunAway()
+    {
+        isRunningAway = true;
+        runAwayStartTime = Time.time;
+        
+        // Calculate direction away from player
+        Vector2 directionToPlayer = (playerTransform.position - transform.position).normalized;
+        runAwayDirection = -directionToPlayer; // Opposite direction
+        
+        // Flip sprite to face away from player
+        if (runAwayDirection.x > 0)
+        {
+            transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
+        }
+        else
+        {
+            transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
+        }
+    }
+    
+    private void HandleRunAway()
+    {
+        // Check if run away duration has expired
+        if (Time.time - runAwayStartTime >= runAwayDuration)
+        {
+            isRunningAway = false;
+            return;
+        }
+        
+        // Check if far enough from player
+        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+        if (distanceToPlayer >= runAwayDistance)
+        {
+            isRunningAway = false;
+            return;
+        }
+        
+        // Move away from player
+        Vector2 movement = runAwayDirection * runAwaySpeed * Time.deltaTime;
+        rb.MovePosition(rb.position + movement);
+        
+        // Update animation states
+        UpdateAnimationStates();
     }
 
     // Debug vizualizace v editoru
@@ -199,5 +310,61 @@ public class ShooterEnemy : MonsterPatrol
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(firePoint.position, 0.2f);
         }
+    }
+
+    // Animation management
+    private void UpdateAnimationStates()
+    {
+        if (anim == null) return;
+        
+        // Set animation parameters based on current state
+        if (HasAnimatorParameter("isShooting"))
+            anim.SetBool("isShooting", isShooting);
+            
+        if (HasAnimatorParameter("isRunning"))
+            anim.SetBool("isRunning", isRunningAway);
+            
+        // Improved walking detection
+        bool isMoving = false;
+        
+        if (isRunningAway)
+        {
+            // During run away, always consider as moving
+            isMoving = true;
+        }
+        else if (playerTransform != null && IsPlayerInRange() && !isShooting && !isShootingLocked)
+        {
+            // When chasing/facing player, consider as moving (even if just facing)
+            isMoving = true;
+        }
+        else
+        {
+            // During patrol, check if we're actually moving towards patrol point
+            if (patrolPoints != null && patrolPoints.Length > 0)
+            {
+                Transform targetPoint = patrolPoints[patrolDestination];
+                float distanceToTarget = Vector2.Distance(transform.position, targetPoint.position);
+                isMoving = distanceToTarget > 0.2f; // Moving if not at patrol point
+            }
+        }
+            
+        if (HasAnimatorParameter("isWalking"))
+            anim.SetBool("isWalking", !isShooting && !isShootingLocked && isMoving);
+            
+        if (HasAnimatorParameter("isIdle"))
+            anim.SetBool("isIdle", !isShooting && !isShootingLocked && !isRunningAway && !isMoving);
+    }
+
+    // Pomocná metoda pro kontrolu existence animator parametru
+    private bool HasAnimatorParameter(string paramName)
+    {
+        if (anim == null) return false;
+        
+        foreach (AnimatorControllerParameter param in anim.parameters)
+        {
+            if (param.name == paramName)
+                return true;
+        }
+        return false;
     }
 }
