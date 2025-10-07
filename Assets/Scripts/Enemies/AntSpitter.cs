@@ -12,8 +12,8 @@ public class AntSpitter : MonsterPatrol
     
     [Header("Targeting Settings")]
     public float projectileSpeed = 8f;
-    public bool predictPlayerMovement = true;
-    public float predictionTime = 0.5f;
+    public bool usePredictiveAiming = true;
+    public float predictionMultiplier = 1f;
     
     [Header("Run Away Settings")]
     public float runAwayDuration = 2f;
@@ -61,15 +61,7 @@ public class AntSpitter : MonsterPatrol
             playerRb = playerTransform.GetComponent<Rigidbody2D>();
         }
 
-        // Nastav rychlost projektilu v prefabu pokud existuje
-        if (projectilePrefab != null)
-        {
-            Projectiles projComponent = projectilePrefab.GetComponent<Projectiles>();
-            if (projComponent != null)
-            {
-                projComponent.speed = projectileSpeed;
-            }
-        }
+        // Note: We set projectile speed on each spawned instance, not on the prefab
     }
 
     protected override void Update()
@@ -105,7 +97,6 @@ public class AntSpitter : MonsterPatrol
 
             if (CanSpit())
             {
-                Debug.Log("[AntSpitter] Player in range and can spit - starting burst");
                 if (useBurstFire)
                 {
                     StartCoroutine(BurstSpit());
@@ -118,10 +109,6 @@ public class AntSpitter : MonsterPatrol
                 
                 // Start spitting lock
                 StartSpittingLock();
-            }
-            else
-            {
-                Debug.Log($"[AntSpitter] Player in range but cannot spit - cooldown: {Time.time - lastSpitTime < spitCooldown}, isSpitting: {isSpitting}, isSpittingLocked: {isSpittingLocked}");
             }
             // Remove the automatic run away when can't spit - let the spitting lock handle it
 
@@ -143,7 +130,6 @@ public class AntSpitter : MonsterPatrol
     private bool CanSpit()
     {
         bool canSpit = Time.time >= lastSpitTime + spitCooldown && !isSpitting && !isSpittingLocked;
-        Debug.Log($"[AntSpitter] CanSpit check - Time: {Time.time}, LastSpit: {lastSpitTime}, Cooldown: {spitCooldown}, CanSpit: {canSpit}, isSpitting: {isSpitting}, isSpittingLocked: {isSpittingLocked}");
         return canSpit;
     }
 
@@ -195,16 +181,21 @@ public class AntSpitter : MonsterPatrol
 
     private Vector2 CalculateTargetDirection()
     {
+        if (playerTransform == null) return Vector2.right;
+        
         Vector2 targetPosition = playerTransform.position;
-
-        // Predikce pohybu hráče
-        if (predictPlayerMovement && playerRb != null)
+        
+        // Add movement prediction if enabled
+        if (usePredictiveAiming)
         {
-            Vector2 playerVelocity = playerRb.velocity;
-            targetPosition += playerVelocity * predictionTime;
+            Rigidbody2D playerRb = playerTransform.GetComponent<Rigidbody2D>();
+            if (playerRb != null)
+            {
+                float timeToTarget = Vector2.Distance(spitPoint.position, targetPosition) / projectileSpeed;
+                targetPosition += playerRb.velocity * timeToTarget * predictionMultiplier;
+            }
         }
-
-        // Vypočítej směr k cílové pozici
+        
         Vector2 direction = (targetPosition - (Vector2)spitPoint.position).normalized;
         return direction;
     }
@@ -223,6 +214,8 @@ public class AntSpitter : MonsterPatrol
         {
             projectile.SetDirection(direction);
             projectile.SetLaunchDelay(projectileLaunchDelay);
+            // Set speed on the spawned instance, not the prefab
+            projectile.speed = projectileSpeed;
         }
 
         // Poznámka: Rigidbody2D velocity se už nenastavuje, protože Projectiles script řídí pohyb
@@ -242,9 +235,10 @@ public class AntSpitter : MonsterPatrol
             Gizmos.DrawLine(transform.position, playerTransform.position);
 
             // Zobraz predikovanou pozici
-            if (predictPlayerMovement && playerRb != null)
+            if (usePredictiveAiming && playerRb != null)
             {
-                Vector2 predictedPos = (Vector2)playerTransform.position + playerRb.velocity * predictionTime;
+                float timeToTarget = Vector2.Distance(spitPoint.position, playerTransform.position) / projectileSpeed;
+                Vector2 predictedPos = (Vector2)playerTransform.position + playerRb.velocity * timeToTarget * predictionMultiplier;
                 Gizmos.color = Color.green;
                 Gizmos.DrawWireSphere(predictedPos, 0.5f);
                 Gizmos.DrawLine(transform.position, predictedPos);
@@ -262,6 +256,7 @@ public class AntSpitter : MonsterPatrol
     // Spitting lock mechanics
     private void StartSpittingLock()
     {
+        Debug.Log($"[AntSpitter] StartSpittingLock - Duration: {spittingLockDuration}s");
         isSpittingLocked = true;
         spittingLockStartTime = Time.time;
         isSpitting = true;
@@ -272,12 +267,19 @@ public class AntSpitter : MonsterPatrol
     
     private IEnumerator HandleSpittingLockEnd()
     {
+        Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Waiting {spittingLockDuration}s");
         yield return new WaitForSeconds(spittingLockDuration);
         
+        Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Lock ended, checking if should run away");
         // After spitting lock ends, start running away only if player is still in range
         if (!isRunningAway && playerTransform != null && IsPlayerInRange())
         {
+            Debug.Log("[AntSpitter] Starting run away after spitting lock");
             StartRunAway();
+        }
+        else
+        {
+            Debug.Log($"[AntSpitter] Not starting run away - isRunningAway: {isRunningAway}, playerInRange: {IsPlayerInRange()}");
         }
     }
 
@@ -286,6 +288,7 @@ public class AntSpitter : MonsterPatrol
     {
         if (playerTransform == null) return;
         
+        Debug.Log($"[AntSpitter] StartRunAway - Duration: {runAwayDuration}s");
         isRunningAway = true;
         runAwayStartTime = Time.time;
         
@@ -305,6 +308,7 @@ public class AntSpitter : MonsterPatrol
         // Check if run away duration is over
         if (Time.time - runAwayStartTime >= runAwayDuration)
         {
+            Debug.Log("[AntSpitter] HandleRunAway - Run away duration ended");
             isRunningAway = false;
             // Don't return to patrol point - let the ant resume normal behavior
             // This allows the ant to potentially engage the player again

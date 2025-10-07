@@ -28,6 +28,7 @@ public class Projectiles : MonoBehaviour
     public void SetDirection(Vector2 dir)
     {
         direction = dir.normalized;
+        Debug.Log($"[Projectiles] SetDirection called with: {dir}, normalized: {direction}");
         
         // Spustí delay pouze pokud ještě nebyl spuštěn
         if (!delayStarted)
@@ -59,6 +60,7 @@ public class Projectiles : MonoBehaviour
         }
 
         // Normální pohyb projektilu
+        Debug.Log($"[Projectiles] Moving with direction: {direction}, speed: {speed}");
         transform.Translate(direction * speed * Time.deltaTime);
 
         // Volitelně: otočení sprite směrem pohybu

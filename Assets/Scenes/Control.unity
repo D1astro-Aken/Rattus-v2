@@ -25400,6 +25400,10 @@ PrefabInstance:
       value: AntSpitter
       objectReference: {fileID: 0}
     - target: {fileID: 7262516159389891897, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
+      propertyPath: shootCooldown
+      value: 1.29
+      objectReference: {fileID: 0}
+    - target: {fileID: 7262516159389891897, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 266647524}

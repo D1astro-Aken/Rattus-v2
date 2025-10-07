@@ -12,8 +12,8 @@ public class ShooterEnemy : MonsterPatrol
     
     [Header("Targeting Settings")]
     public float projectileSpeed = 8f;
-    public bool predictPlayerMovement = true;
-    public float predictionTime = 0.3f;
+    public bool usePredictiveAiming = true;
+    public float predictionMultiplier = 1f;
     
     [Header("Burst Settings")]
     public bool useBurstFire = false;
@@ -61,19 +61,15 @@ public class ShooterEnemy : MonsterPatrol
             playerRb = playerTransform.GetComponent<Rigidbody2D>();
         }
 
-        // Nastav rychlost projektilu v prefabu pokud existuje
-        if (projectilePrefab != null)
-        {
-            Projectiles projComponent = projectilePrefab.GetComponent<Projectiles>();
-            if (projComponent != null)
-            {
-                projComponent.speed = projectileSpeed;
-            }
-        }
+        // Note: We set projectile speed on each spawned instance, not on the prefab
     }
 
     protected override void Update()
     {
+        // Check if enemy is dead and stop all actions
+        Enemy enemyComponent = GetComponent<Enemy>();
+        if (enemyComponent != null && enemyComponent.IsDead()) return;
+        
         // Handle shooting lock timer
         if (isShootingLocked)
         {
@@ -160,42 +156,67 @@ public class ShooterEnemy : MonsterPatrol
     private IEnumerator BurstShoot()
     {
         isShooting = true;
-
+        
         for (int i = 0; i < burstCount; i++)
         {
-            if (projectilePrefab != null && firePoint != null)
+            // Check if this enemy still exists
+            if (this == null || gameObject == null)
             {
-                Vector2 targetDirection = CalculateTargetDirection();
-                SpawnProjectile(targetDirection);
+                yield break;
             }
-
-            if (i < burstCount - 1) // Nečekej po posledním výstřelu
+            
+            Vector2 targetDirection = CalculateTargetDirection();
+            SpawnProjectile(targetDirection);
+            
+            if (i < burstCount - 1) // Don't wait after the last shot
             {
                 yield return new WaitForSeconds(burstDelay);
             }
         }
-
-        isShooting = false;
+        
+        // Check if this enemy still exists before setting isShooting
+        if (this != null && gameObject != null)
+        {
+            isShooting = false;
+        }
     }
 
     private Vector2 CalculateTargetDirection()
     {
+        if (playerTransform == null) return Vector2.right;
+        
         Vector2 targetPosition = playerTransform.position;
-
-        // Predikce pohybu hráče
-        if (predictPlayerMovement && playerRb != null)
+        
+        // Add movement prediction if enabled
+        if (usePredictiveAiming)
         {
-            Vector2 playerVelocity = playerRb.velocity;
-            targetPosition += playerVelocity * predictionTime;
+            Rigidbody2D playerRb = playerTransform.GetComponent<Rigidbody2D>();
+            if (playerRb != null)
+            {
+                float timeToTarget = Vector2.Distance(firePoint.position, targetPosition) / projectileSpeed;
+                targetPosition += playerRb.velocity * timeToTarget * predictionMultiplier;
+            }
         }
-
-        // Vypočítej směr k cílové pozici
+        
         Vector2 direction = (targetPosition - (Vector2)firePoint.position).normalized;
         return direction;
     }
 
     private void SpawnProjectile(Vector2 direction)
     {
+        // Check if projectile prefab and fire point are valid
+        if (projectilePrefab == null)
+        {
+            Debug.LogError("[ShooterEnemy] ProjectilePrefab is null!");
+            return;
+        }
+        
+        if (firePoint == null)
+        {
+            Debug.LogError("[ShooterEnemy] FirePoint is null!");
+            return;
+        }
+        
         // Calculate rotation angle towards target direction
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
@@ -208,6 +229,12 @@ public class ShooterEnemy : MonsterPatrol
         {
             projectile.SetDirection(direction);
             projectile.SetLaunchDelay(projectileLaunchDelay);
+            // Set speed on the spawned instance, not the prefab
+            projectile.speed = projectileSpeed;
+        }
+        else
+        {
+            Debug.LogError("[ShooterEnemy] Projectile component not found on spawned projectile!");
         }
 
         // Poznámka: Rigidbody2D velocity se už nenastavuje, protože Projectiles script řídí pohyb
@@ -216,11 +243,14 @@ public class ShooterEnemy : MonsterPatrol
     // Shooting lock mechanics
     private void StartShootingLock()
     {
-        isShootingLocked = true;
-        shootingLockStartTime = Time.time;
-        isShooting = true;
+        if (playerTransform == null) return;
         
-        // Start coroutine to handle run away after shooting lock
+        Debug.Log($"[ShooterEnemy] StartShootingLock - Duration: {shootingLockDuration}s");
+        isShootingLocked = true;
+        isShooting = true;
+        shootingLockStartTime = Time.time;
+        
+        // Start coroutine to handle the end of shooting lock
         StartCoroutine(HandleShootingLockEnd());
     }
     
@@ -228,16 +258,32 @@ public class ShooterEnemy : MonsterPatrol
     {
         yield return new WaitForSeconds(shootingLockDuration);
         
-        // After shooting lock ends, start running away
-        if (!isRunningAway)
+        // Check if this enemy still exists
+        if (this == null || gameObject == null)
         {
+            yield break;
+        }
+        
+        Debug.Log("[ShooterEnemy] HandleShootingLockEnd - Shooting lock ended");
+        
+        // Check if player is still in range after shooting lock
+        if (playerTransform != null && IsPlayerInRange())
+        {
+            Debug.Log("[ShooterEnemy] Player still in range after shooting lock - starting run away");
             StartRunAway();
+        }
+        else
+        {
+            Debug.Log("[ShooterEnemy] Player not in range after shooting lock - resuming normal behavior");
+            isShootingLocked = false;
+            isShooting = false;
         }
     }
 
     // Run away mechanics
     private void StartRunAway()
     {
+        Debug.Log($"[ShooterEnemy] StartRunAway - Duration: {runAwayDuration}s");
         isRunningAway = true;
         runAwayStartTime = Time.time;
         
@@ -261,6 +307,7 @@ public class ShooterEnemy : MonsterPatrol
         // Check if run away duration has expired
         if (Time.time - runAwayStartTime >= runAwayDuration)
         {
+            Debug.Log("[ShooterEnemy] HandleRunAway - Run away duration ended");
             isRunningAway = false;
             return;
         }
@@ -269,6 +316,7 @@ public class ShooterEnemy : MonsterPatrol
         float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
         if (distanceToPlayer >= runAwayDistance)
         {
+            Debug.Log("[ShooterEnemy] HandleRunAway - Far enough from player, stopping run away");
             isRunningAway = false;
             return;
         }
@@ -295,9 +343,10 @@ public class ShooterEnemy : MonsterPatrol
             Gizmos.DrawLine(transform.position, playerTransform.position);
 
             // Zobraz predikovanou pozici
-            if (predictPlayerMovement && playerRb != null)
+            if (usePredictiveAiming && playerRb != null)
             {
-                Vector2 predictedPos = (Vector2)playerTransform.position + playerRb.velocity * predictionTime;
+                float timeToTarget = Vector2.Distance(firePoint.position, playerTransform.position) / projectileSpeed;
+                Vector2 predictedPos = (Vector2)playerTransform.position + playerRb.velocity * timeToTarget * predictionMultiplier;
                 Gizmos.color = Color.green;
                 Gizmos.DrawWireSphere(predictedPos, 0.5f);
                 Gizmos.DrawLine(transform.position, predictedPos);
