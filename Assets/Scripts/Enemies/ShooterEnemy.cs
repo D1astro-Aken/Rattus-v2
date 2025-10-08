@@ -10,6 +10,10 @@ public class ShooterEnemy : MonsterPatrol
     public GameObject projectilePrefab;
     public Transform firePoint;
     
+    [Header("Multiple Spawn Points")]
+    public Transform[] firePoints; // Array of spawn points for burst fire
+    public bool useMultipleSpawnPoints = false; // Toggle to use multiple spawn points
+    
     [Header("Targeting Settings")]
     public float projectileSpeed = 8f;
     public bool usePredictiveAiming = true;
@@ -146,7 +150,7 @@ public class ShooterEnemy : MonsterPatrol
 
     private void Shoot()
     {
-        if (projectilePrefab != null && firePoint != null)
+        if (projectilePrefab != null && (firePoint != null || (useMultipleSpawnPoints && firePoints != null && firePoints.Length > 0)))
         {
             Vector2 targetDirection = CalculateTargetDirection();
             SpawnProjectile(targetDirection);
@@ -193,27 +197,57 @@ public class ShooterEnemy : MonsterPatrol
             Rigidbody2D playerRb = playerTransform.GetComponent<Rigidbody2D>();
             if (playerRb != null)
             {
-                float timeToTarget = Vector2.Distance(firePoint.position, targetPosition) / projectileSpeed;
+                float timeToTarget = Vector2.Distance(GetActiveFirePoint().position, targetPosition) / projectileSpeed;
                 targetPosition += playerRb.velocity * timeToTarget * predictionMultiplier;
             }
         }
         
-        Vector2 direction = (targetPosition - (Vector2)firePoint.position).normalized;
+        Vector2 direction = (targetPosition - (Vector2)GetActiveFirePoint().position).normalized;
+        Debug.Log($"[ShooterEnemy] CalculateTargetDirection - FirePoint: {GetActiveFirePoint().position}, TargetPos: {targetPosition}, Direction: {direction}");
         return direction;
     }
 
     private void SpawnProjectile(Vector2 direction)
     {
-        // Check if projectile prefab and fire point are valid
+        // Check if projectile prefab is valid
         if (projectilePrefab == null)
         {
             Debug.LogError("[ShooterEnemy] ProjectilePrefab is null!");
             return;
         }
         
-        if (firePoint == null)
+        // Use multiple spawn points if enabled and available
+        if (useMultipleSpawnPoints && firePoints != null && firePoints.Length > 0)
         {
-            Debug.LogError("[ShooterEnemy] FirePoint is null!");
+            SpawnProjectilesAtMultiplePoints(direction);
+        }
+        else
+        {
+            // Fallback to single spawn point
+            SpawnProjectileAtSinglePoint(direction, firePoint);
+        }
+    }
+    
+    private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
+    {
+        for (int i = 0; i < firePoints.Length; i++)
+        {
+            if (firePoints[i] != null)
+            {
+                SpawnProjectileAtSinglePoint(direction, firePoints[i]);
+            }
+            else
+            {
+                Debug.LogWarning($"[ShooterEnemy] FirePoint at index {i} is null!");
+            }
+        }
+    }
+    
+    private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoint)
+    {
+        if (spawnPoint == null)
+        {
+            Debug.LogError("[ShooterEnemy] SpawnPoint is null!");
             return;
         }
         
@@ -221,7 +255,7 @@ public class ShooterEnemy : MonsterPatrol
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         
-        GameObject proj = Instantiate(projectilePrefab, firePoint.position, rotation);
+        GameObject proj = Instantiate(projectilePrefab, spawnPoint.position, rotation);
 
         // Nastav směr projektilu a launch delay
         Projectiles projectile = proj.GetComponent<Projectiles>();
@@ -415,5 +449,22 @@ public class ShooterEnemy : MonsterPatrol
                 return true;
         }
         return false;
+    }
+    
+    // Helper method to get the active fire point for calculations
+    private Transform GetActiveFirePoint()
+    {
+        if (useMultipleSpawnPoints && firePoints != null && firePoints.Length > 0)
+        {
+            // Return the first valid fire point for calculations
+            for (int i = 0; i < firePoints.Length; i++)
+            {
+                if (firePoints[i] != null)
+                    return firePoints[i];
+            }
+        }
+        
+        // Fallback to single fire point
+        return firePoint;
     }
 }
