@@ -28,8 +28,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash Mechanics")]
     [SerializeField] private float dashDistance;
     [SerializeField] private float dashCooldown;
+     [SerializeField] private float dashDuration = 0.2f; // Délka dashu (air dash tuning)
     private float dashCooldownTimer;
     private bool isDashing;
+    private bool hasAirDashed; // true, pokud už byl dash použit ve vzduchu
 
     [Header("Ledge Grab")]
     [SerializeField] private float ledgeJumpBackDistance = 0.5f;
@@ -61,6 +63,17 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxJumpTime = 0.35f; // Maximální doba držení skoku
     [SerializeField] private float maxFallSpeed = 15f; // Maximální rychlost pádu
     
+    // --- Acceleration/Deceleration ---
+    [Header("Acceleration")]
+    [SerializeField] private float groundAcceleration = 60f;
+    [SerializeField] private float groundDeceleration = 60f;
+    [SerializeField] private float airAcceleration = 30f;
+    [SerializeField] private float airDeceleration = 30f;
+
+    // --- Apex Assist ---
+    [Header("Apex Assist")]
+    [SerializeField] private float apexThreshold = 0.3f; // Rychlostní práh poblíž vrcholu skoku
+    [SerializeField] private float apexGravityMultiplier = 0.8f; // Nižší gravitace pro "hang time"
     private float jumpBufferCounter;
     private float jumpTimeCounter;
     private bool isJumping;
@@ -258,8 +271,12 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
             Dash();
 
-        // Dynamic gravity for better jump feel
-        if (body.velocity.y < 0)
+        // Dynamic gravity for better jump feel (with Apex Assist)
+        if (!isGrounded() && Mathf.Abs(body.velocity.y) < apexThreshold)
+        {
+            body.gravityScale = defaultGravityScale * apexGravityMultiplier;
+        }
+        else if (body.velocity.y < 0)
         {
             // Rychlejší pád
             body.gravityScale = defaultGravityScale * fallGravityMultiplier;
@@ -283,21 +300,30 @@ public class PlayerMovement : MonoBehaviour
 
         if (!isDashing)
         {
-            // Původní horizontální pohyb s step-up mechanikou
-            Vector2 targetVelocity = new Vector2(horizontalInput * speed, body.velocity.y);
-            
-            // Pokud se hráč pohybuje horizontálně a je na zemi, zkontroluj step-up
-            if (horizontalInput != 0 && isGrounded())
+            // Hladká akcelerace/decelerace pro horizontální pohyb
+            float currentVelX = body.velocity.x;
+            float targetSpeed = horizontalInput * speed;
+            bool hasInput = Mathf.Abs(horizontalInput) > 0.01f;
+            float accelRate = isGrounded() 
+                ? (hasInput ? groundAcceleration : groundDeceleration)
+                : (hasInput ? airAcceleration : airDeceleration);
+            float newVelX = Mathf.MoveTowards(currentVelX, targetSpeed, accelRate * Time.deltaTime);
+
+            Vector2 targetVelocity = new Vector2(newVelX, body.velocity.y);
+
+            // Step-up kontrola při pohybu po zemi
+            if (hasInput && isGrounded())
             {
                 targetVelocity = HandleStepUp(targetVelocity);
             }
-            
+
             body.velocity = targetVelocity;
 
             if (isGrounded())
             {
                 coyoteCounter = coyoteTime;
                 jumpCounter = extraJumps;
+                hasAirDashed = false; // reset povolení air dash po kontaktu se zemí
             }
             else
             {
@@ -375,20 +401,37 @@ public class PlayerMovement : MonoBehaviour
 
     private void Dash()
     {
-        SoundManager.instance.PlaySound(dashSound);
-        isDashing = true;
-        dashCooldownTimer = dashCooldown;
-        anim.SetTrigger("dash");
+        // Zamez opakovanému air dashu během jedné vzdušné fáze
+        if (!isGrounded() && hasAirDashed)
+            return;
 
-        Vector2 dashDirection = new Vector2(transform.localScale.x, 0).normalized;
-        body.velocity = dashDirection * dashDistance;
-
-        Invoke(nameof(EndDash), 0.2f);
+         if (SoundManager.instance != null && dashSound != null)
+             SoundManager.instance.PlaySound(dashSound);
+         isDashing = true;
+         dashCooldownTimer = dashCooldown;
+         anim.SetTrigger("dash");
+ 
+         Vector2 dashDirection = new Vector2(transform.localScale.x, 0).normalized;
+ 
+         // Potlačit gravitaci při air dash
+         if (!isGrounded())
+             body.gravityScale = 0f;
+ 
+         // Pokud jsme ve vzduchu, označ, že dash byl použit v této vzdušné fázi
+         if (!isGrounded())
+             hasAirDashed = true;
+ 
+         // Momentum-preserving pouze pokud se hráč pohybuje nahoru (ve vzduchu)
+         float preserveVy = (!isGrounded() && body.velocity.y > 0f) ? body.velocity.y : 0f;
+         body.velocity = new Vector2(dashDirection.x * dashDistance, preserveVy);
+ 
+         Invoke(nameof(EndDash), dashDuration);
     }
 
     private void EndDash()
     {
         isDashing = false;
+        body.gravityScale = defaultGravityScale; // obnovit gravitaci po dashi
     }
 
     // --- LEDGE FUNCTIONS ---
