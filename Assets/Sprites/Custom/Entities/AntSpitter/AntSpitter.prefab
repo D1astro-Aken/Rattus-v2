@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &500628691449403513
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2866029577157004429}
+  m_Layer: 9
+  m_Name: SpitPoint (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2866029577157004429
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 500628691449403513}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.32, y: 0.93, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8050727836913144230}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &860727810958469279
 GameObject:
   m_ObjectHideFlags: 0
@@ -67,6 +98,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2277904517359644464}
+  - {fileID: 8319356677578159439}
+  - {fileID: 2866029577157004429}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &399542531530450864
@@ -160,12 +193,17 @@ MonoBehaviour:
   moveSpeed: 2
   playerTransform: {fileID: 0}
   shootingDistance: 6.64
-  shootCooldown: 4.66
-  projectilePrefab: {fileID: 0}
+  shootCooldown: 1.29
+  projectilePrefab: {fileID: 2634710003537273880, guid: eb4c8faeed7ea774e980936c6c74be2c, type: 3}
   firePoint: {fileID: 2277904517359644464}
+  firePoints:
+  - {fileID: 2277904517359644464}
+  - {fileID: 8319356677578159439}
+  - {fileID: 2866029577157004429}
+  useMultipleSpawnPoints: 1
   projectileSpeed: 7
-  predictPlayerMovement: 1
-  predictionTime: 0.3
+  usePredictiveAiming: 1
+  predictionMultiplier: 1
   useBurstFire: 1
   burstCount: 3
   burstDelay: 0.3
@@ -280,3 +318,34 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!1 &4803160953790148843
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8319356677578159439}
+  m_Layer: 9
+  m_Name: SpitPoint (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8319356677578159439
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4803160953790148843}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.33, y: 1.99, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8050727836913144230}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
