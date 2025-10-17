@@ -66,29 +66,32 @@ public class LedgeHitbox : MonoBehaviour
 
     private bool CheckLedgeInDirection(Vector2 playerPos, float direction)
     {
+        // Kombinovaný layer mask pro detekci ledge - zahrnuje ground i wall objekty
+        LayerMask ledgeDetectionLayer = groundLayer | wallLayer;
+        
         // 1. Zkontroluj, zda je nad hráčem volné místo (UpperCheck nahrazení)
         Vector2 aboveCheckPos = playerPos + Vector2.up * (upwardCheckDistance * 0.8f);
         Vector2 aboveBoxSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight * 0.8f);
         
-        Collider2D aboveCollider = Physics2D.OverlapBox(aboveCheckPos, aboveBoxSize, 0f, groundLayer);
+        Collider2D aboveCollider = Physics2D.OverlapBox(aboveCheckPos, aboveBoxSize, 0f, ledgeDetectionLayer);
         if (aboveCollider != null)
         {
             return false; // Nad hráčem je překážka, není to ledge
         }
 
-        // 2. Zkontroluj, zda je před hráčem ground na úrovni rukou
+        // 2. Zkontroluj, zda je před hráčem ground nebo wall na úrovni rukou
         Vector2 forwardCheckPos = playerPos + Vector2.right * direction * forwardCheckDistance;
         Vector2 forwardBoxSize = new Vector2(ledgeDetectionWidth, ledgeDetectionHeight);
         
-        Collider2D forwardCollider = Physics2D.OverlapBox(forwardCheckPos, forwardBoxSize, 0f, groundLayer);
+        Collider2D forwardCollider = Physics2D.OverlapBox(forwardCheckPos, forwardBoxSize, 0f, ledgeDetectionLayer);
         if (forwardCollider == null)
         {
             // Zkus také blíže k hráči pro lepší detekci
             Vector2 closerCheckPos = playerPos + Vector2.right * direction * (forwardCheckDistance * 0.7f);
-            forwardCollider = Physics2D.OverlapBox(closerCheckPos, forwardBoxSize, 0f, groundLayer);
+            forwardCollider = Physics2D.OverlapBox(closerCheckPos, forwardBoxSize, 0f, ledgeDetectionLayer);
             if (forwardCollider == null)
             {
-                return false; // Před hráčem není ground, není co chytit
+                return false; // Před hráčem není ground ani wall, není co chytit
             }
             forwardCheckPos = closerCheckPos; // Použij bližší pozici
         }
@@ -96,7 +99,7 @@ public class LedgeHitbox : MonoBehaviour
         // 3. Zkontroluj, zda je nad pozicí před hráčem volné místo (skutečný ledge)
         Vector2 forwardAbovePos = forwardCheckPos + Vector2.up * (ledgeDetectionHeight + 0.1f);
         Vector2 forwardAboveSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight * 0.9f);
-        Collider2D forwardAboveCollider = Physics2D.OverlapBox(forwardAbovePos, forwardAboveSize, 0f, groundLayer | wallLayer);
+        Collider2D forwardAboveCollider = Physics2D.OverlapBox(forwardAbovePos, forwardAboveSize, 0f, ledgeDetectionLayer);
         
         if (forwardAboveCollider != null)
         {
@@ -106,7 +109,7 @@ public class LedgeHitbox : MonoBehaviour
         // 4. Najdi skutečnou hranu ledge pro konzistentní pozicování
         // Raycast dolů z pozice nad přední hranou detekčního boxu
         Vector2 rayStart = forwardCheckPos + Vector2.right * direction * (ledgeDetectionWidth * 0.5f) + Vector2.up * (ledgeDetectionHeight + 0.2f);
-        RaycastHit2D hit = Physics2D.Raycast(rayStart, Vector2.down, ledgeDetectionHeight + 0.4f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(rayStart, Vector2.down, ledgeDetectionHeight + 0.4f, ledgeDetectionLayer);
         
         if (hit.collider != null)
         {

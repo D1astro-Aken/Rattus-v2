@@ -205,7 +205,7 @@ MonoBehaviour:
   usePredictiveAiming: 1
   predictionMultiplier: 1
   useBurstFire: 1
-  burstCount: 3
+  burstCount: 1
   burstDelay: 0.3
   projectileLaunchDelay: 0.5
   runAwayDuration: 2.5

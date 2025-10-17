@@ -206,7 +206,8 @@ public class PlayerMovement : MonoBehaviour
                 
                 foreach (Vector2 checkPos in checkPositions)
                 {
-                    Collider2D hitCollider = Physics2D.OverlapCircle(checkPos, 0.08f, groundLayer);
+                    // Kontrola proti ground i wall objektům
+                    Collider2D hitCollider = Physics2D.OverlapCircle(checkPos, 0.08f, groundLayer | wallLayer);
                     if (hitCollider != null)
                     {
                         positionSafe = false;
@@ -224,7 +225,7 @@ public class PlayerMovement : MonoBehaviour
                             snapPosition.y
                         );
                         
-                        Collider2D testCollider = Physics2D.OverlapCircle(safePos, 0.08f, groundLayer);
+                        Collider2D testCollider = Physics2D.OverlapCircle(safePos, 0.08f, groundLayer | wallLayer);
                         if (testCollider == null)
                         {
                             snapPosition = safePos;
@@ -570,13 +571,13 @@ public class PlayerMovement : MonoBehaviour
     {
         float moveDirection = Mathf.Sign(horizontalInput);
         
-        // Zkontroluj, zda je před hráčem překážka na úrovni nohou
+        // Zkontroluj, zda je před hráčem překážka na úrovni nohou (ground nebo wall)
         Vector2 frontCheck = new Vector2(
             boxCollider.bounds.center.x + (boxCollider.bounds.size.x * 0.5f + stepCheckDistance) * moveDirection,
             boxCollider.bounds.center.y - boxCollider.bounds.size.y * 0.3f
         );
         
-        RaycastHit2D frontHit = Physics2D.Raycast(frontCheck, Vector2.right * moveDirection, stepCheckDistance, groundLayer);
+        RaycastHit2D frontHit = Physics2D.Raycast(frontCheck, Vector2.right * moveDirection, stepCheckDistance, groundLayer | wallLayer);
         
         if (frontHit.collider != null)
         {
@@ -586,7 +587,7 @@ public class PlayerMovement : MonoBehaviour
                 boxCollider.bounds.center.y + stepHeight
             );
             
-            RaycastHit2D stepUpHit = Physics2D.Raycast(stepUpCheck, Vector2.down, stepHeight + 0.1f, groundLayer);
+            RaycastHit2D stepUpHit = Physics2D.Raycast(stepUpCheck, Vector2.down, stepHeight + 0.1f, groundLayer | wallLayer);
             
             if (stepUpHit.collider != null)
             {
@@ -601,7 +602,7 @@ public class PlayerMovement : MonoBehaviour
                         stepUpHit.point.y + boxCollider.bounds.size.y
                     );
                     
-                    Collider2D headCollision = Physics2D.OverlapCircle(headCheck, 0.1f, groundLayer);
+                    Collider2D headCollision = Physics2D.OverlapCircle(headCheck, 0.1f, groundLayer | wallLayer);
                     
                     if (headCollision == null)
                     {
@@ -624,27 +625,57 @@ public class PlayerMovement : MonoBehaviour
     // --- COLLISION CHECKS ---
     public bool isGrounded()
     {
+        // Kombinuj groundLayer a wallLayer pro detekci podlahy
+        int combinedGroundLayer = groundLayer | wallLayer;
+        
         RaycastHit2D raycastHit = Physics2D.BoxCast(
             boxCollider.bounds.center,
             boxCollider.bounds.size,
             0,
             Vector2.down,
             0.1f,
-            groundLayer
+            combinedGroundLayer
         );
         return raycastHit.collider != null;
     }
 
     private bool onWall()
     {
+        // Použij menší box pro detekci pouze ze strany
+        Vector2 sideCheckSize = new Vector2(boxCollider.bounds.size.x * 0.8f, boxCollider.bounds.size.y * 0.6f);
+        
+        // Posun střed detekce trochu nahoru, aby se zabránilo detekci při stání na zemi
+        Vector2 sideCheckCenter = new Vector2(
+            boxCollider.bounds.center.x,
+            boxCollider.bounds.center.y + boxCollider.bounds.size.y * 0.1f
+        );
+        
         RaycastHit2D raycastHit = Physics2D.BoxCast(
-            boxCollider.bounds.center,
-            boxCollider.bounds.size,
+            sideCheckCenter,
+            sideCheckSize,
             0,
             new Vector2(transform.localScale.x, 0),
             0.1f,
             wallLayer
         );
+        
+        // Dodatečná kontrola - ujisti se, že hráč není na zemi
+        // Pokud je hráč na zemi a detekuje wall, pravděpodobně stojí na wall objektu
+        if (raycastHit.collider != null && isGrounded())
+        {
+            // Zkontroluj, zda je wall skutečně ze strany a ne pod hráčem
+            Vector2 rayDirection = new Vector2(transform.localScale.x, 0);
+            RaycastHit2D sideRaycast = Physics2D.Raycast(
+                new Vector2(boxCollider.bounds.center.x, boxCollider.bounds.center.y),
+                rayDirection,
+                boxCollider.bounds.size.x * 0.6f,
+                wallLayer
+            );
+            
+            // Pokud side raycast nedetekuje wall, pravděpodobně stojíme na wall objektu
+            return sideRaycast.collider != null;
+        }
+        
         return raycastHit.collider != null;
     }
 

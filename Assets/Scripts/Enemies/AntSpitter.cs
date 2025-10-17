@@ -66,17 +66,30 @@ public class AntSpitter : MonsterPatrol
 
     protected override void Update()
     {
-        // Handle spitting lock timer
+        // Handle run away mechanic FIRST - it has ABSOLUTE highest priority
+        // NOTHING can interrupt run away once it starts
+        if (isRunningAway)
+        {
+            HandleRunAway();
+            return; // ABSOLUTELY no other logic during run away
+        }
+
+        // Handle spitting lock timer - NEVER check player range during this time
         if (isSpittingLocked)
         {
             if (Time.time - spittingLockStartTime >= spittingLockDuration)
             {
                 isSpittingLocked = false;
                 isSpitting = false;
+                
+                // ALWAYS start run away after spitting lock ends, regardless of player position
+                Debug.Log("[AntSpitter] Spitting lock ended - starting run away (forced)");
+                StartRunAway();
+                return; // Return immediately to start run away
             }
             else
             {
-                // During spitting lock, only update animations
+                // During spitting lock, only update animations - NO range checks!
                 UpdateAnimationStates();
                 return;
             }
@@ -84,13 +97,7 @@ public class AntSpitter : MonsterPatrol
         
         if (isSpitting) return; // Během střelby neprovádíme patrol
 
-        // Handle run away mechanic
-        if (isRunningAway)
-        {
-            HandleRunAway();
-            return;
-        }
-
+        // Only check player range if we're NOT in any shooting state
         if (playerTransform != null && IsPlayerInRange())
         {
             FacePlayer();
@@ -110,15 +117,24 @@ public class AntSpitter : MonsterPatrol
                 // Start spitting lock
                 StartSpittingLock();
             }
-            // Remove the automatic run away when can't spit - let the spitting lock handle it
 
             // Animation states
             UpdateAnimationStates();
         }
         else
         {
-            base.Update(); // Patrol
-            UpdateAnimationStates();
+            // Player is out of range - only reset if we're not in any shooting sequence
+            if (!isSpitting && !isSpittingLocked)
+            {
+                base.Update(); // Patrol
+                UpdateAnimationStates();
+            }
+            else
+            {
+                // If we're shooting or locked, still update animations but don't patrol
+                // This ensures animation states are properly managed even during shooting sequences
+                UpdateAnimationStates();
+            }
         }
     }
 
@@ -258,30 +274,32 @@ public class AntSpitter : MonsterPatrol
     {
         Debug.Log($"[AntSpitter] StartSpittingLock - Duration: {spittingLockDuration}s");
         isSpittingLocked = true;
+        isSpitting = true; // Set isSpitting to true during lock
         spittingLockStartTime = Time.time;
-        isSpitting = true;
         
-        // Start coroutine to handle run away after spitting lock
-        StartCoroutine(HandleSpittingLockEnd());
+        // No longer need the coroutine since we handle it in Update
     }
     
+    // This method is no longer needed since we handle spitting lock directly in Update
+    /*
     private IEnumerator HandleSpittingLockEnd()
     {
         Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Waiting {spittingLockDuration}s");
         yield return new WaitForSeconds(spittingLockDuration);
         
-        Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Lock ended, checking if should run away");
-        // After spitting lock ends, start running away only if player is still in range
-        if (!isRunningAway && playerTransform != null && IsPlayerInRange())
+        Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Lock ended, starting run away");
+        // After spitting lock ends, always start running away regardless of player position
+        if (!isRunningAway && playerTransform != null)
         {
             Debug.Log("[AntSpitter] Starting run away after spitting lock");
             StartRunAway();
         }
         else
         {
-            Debug.Log($"[AntSpitter] Not starting run away - isRunningAway: {isRunningAway}, playerInRange: {IsPlayerInRange()}");
+            Debug.Log($"[AntSpitter] Not starting run away - isRunningAway: {isRunningAway}, playerTransform: {playerTransform != null}");
         }
     }
+    */
 
     // Run away mechanic methods
     private void StartRunAway()
@@ -305,19 +323,22 @@ public class AntSpitter : MonsterPatrol
     
     private void HandleRunAway()
     {
+        Debug.Log($"[AntSpitter] HandleRunAway - Time elapsed: {Time.time - runAwayStartTime}/{runAwayDuration}");
+        
         // Check if run away duration is over
         if (Time.time - runAwayStartTime >= runAwayDuration)
         {
             Debug.Log("[AntSpitter] HandleRunAway - Run away duration ended");
             isRunningAway = false;
-            // Don't return to patrol point - let the ant resume normal behavior
-            // This allows the ant to potentially engage the player again
             return;
         }
         
-        // Move away from player
+        // Move away from player - ALWAYS move regardless of player position
         Vector2 targetPosition = (Vector2)transform.position + runAwayDirection * runAwaySpeed * Time.deltaTime;
         transform.position = targetPosition;
+        
+        // Update animations during run away
+        UpdateAnimationStates();
     }
     
     // Animation management
@@ -329,7 +350,7 @@ public class AntSpitter : MonsterPatrol
         
         // Set animation parameters based on current state
         if (HasAnimatorParameter("isSpitting"))
-            anim.SetBool("isSpitting", isSpitting);
+            anim.SetBool("isSpitting", isSpitting || isSpittingLocked); // Keep spitting animation during lock
             
         if (HasAnimatorParameter("isRunning"))
             anim.SetBool("isRunning", isRunningAway);
@@ -342,7 +363,12 @@ public class AntSpitter : MonsterPatrol
             // During run away, always consider as moving
             isMoving = true;
         }
-        else if (playerTransform != null && IsPlayerInRange() && !isSpitting && !isSpittingLocked)
+        else if (isSpitting || isSpittingLocked)
+        {
+            // During shooting sequence, not moving (standing still to shoot)
+            isMoving = false;
+        }
+        else if (playerTransform != null && IsPlayerInRange())
         {
             // When chasing/facing player, consider as moving (even if just facing)
             isMoving = true;
@@ -359,7 +385,7 @@ public class AntSpitter : MonsterPatrol
         }
             
         if (HasAnimatorParameter("isWalking"))
-            anim.SetBool("isWalking", !isSpitting && !isSpittingLocked && isMoving);
+            anim.SetBool("isWalking", !isSpitting && !isSpittingLocked && !isRunningAway && isMoving);
             
         if (HasAnimatorParameter("isIdle"))
             anim.SetBool("isIdle", !isSpitting && !isSpittingLocked && !isRunningAway && !isMoving);
