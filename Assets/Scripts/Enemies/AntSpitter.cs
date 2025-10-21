@@ -10,6 +10,10 @@ public class AntSpitter : MonsterPatrol
     public GameObject projectilePrefab;
     public Transform spitPoint;
     
+    [Header("Multiple Spitpoints")]
+    public bool useMultipleSpitPoints = false;
+    public Transform[] spitPoints;
+    
     [Header("Targeting Settings")]
     public float projectileSpeed = 8f;
     public bool usePredictiveAiming = true;
@@ -29,6 +33,7 @@ public class AntSpitter : MonsterPatrol
     public float projectileLaunchDelay = 0.5f; // Doba čekání před vypuštěním projektilu
 
     private float lastSpitTime = -Mathf.Infinity;
+    private bool canShoot = true; // NEW: Explicit canShoot control
     private bool isSpitting = false;
     private Rigidbody2D playerRb;
     
@@ -95,7 +100,13 @@ public class AntSpitter : MonsterPatrol
             }
         }
         
-        if (isSpitting) return; // Během střelby neprovádíme patrol
+        // Handle active shooting (BurstSpit coroutine) - NEVER interrupt it!
+        if (isSpitting)
+        {
+            Debug.Log("[AntSpitter] Currently shooting - no other logic allowed");
+            UpdateAnimationStates();
+            return; // Don't do anything else during active shooting
+        }
 
         // Only check player range if we're NOT in any shooting state
         if (playerTransform != null && IsPlayerInRange())
@@ -104,6 +115,10 @@ public class AntSpitter : MonsterPatrol
 
             if (CanSpit())
             {
+                // DISABLE shooting capability immediately after shooting starts
+                canShoot = false;
+                Debug.Log("[AntSpitter] canShoot set to FALSE - shooting started");
+                
                 if (useBurstFire)
                 {
                     StartCoroutine(BurstSpit());
@@ -123,18 +138,9 @@ public class AntSpitter : MonsterPatrol
         }
         else
         {
-            // Player is out of range - only reset if we're not in any shooting sequence
-            if (!isSpitting && !isSpittingLocked)
-            {
-                base.Update(); // Patrol
-                UpdateAnimationStates();
-            }
-            else
-            {
-                // If we're shooting or locked, still update animations but don't patrol
-                // This ensures animation states are properly managed even during shooting sequences
-                UpdateAnimationStates();
-            }
+            // Player is out of range - only patrol if we're not in any shooting state
+            base.Update(); // Patrol
+            UpdateAnimationStates();
         }
     }
 
@@ -145,7 +151,17 @@ public class AntSpitter : MonsterPatrol
 
     private bool CanSpit()
     {
-        bool canSpit = Time.time >= lastSpitTime + spitCooldown && !isSpitting && !isSpittingLocked;
+        // Can only spit if:
+        // 1. Explicitly allowed to shoot (canShoot)
+        // 2. Cooldown has passed
+        // 3. Not currently shooting (isSpitting)
+        // 4. Not in spitting lock period (isSpittingLocked)
+        // 5. Not running away (isRunningAway)
+        bool canSpit = canShoot && 
+                      Time.time >= lastSpitTime + spitCooldown && 
+                      !isSpitting && 
+                      !isSpittingLocked && 
+                      !isRunningAway;
         return canSpit;
     }
 
@@ -207,22 +223,65 @@ public class AntSpitter : MonsterPatrol
             Rigidbody2D playerRb = playerTransform.GetComponent<Rigidbody2D>();
             if (playerRb != null)
             {
-                float timeToTarget = Vector2.Distance(spitPoint.position, targetPosition) / projectileSpeed;
+                float timeToTarget = Vector2.Distance(GetActiveSpitPoint().position, targetPosition) / projectileSpeed;
                 targetPosition += playerRb.velocity * timeToTarget * predictionMultiplier;
             }
         }
         
-        Vector2 direction = (targetPosition - (Vector2)spitPoint.position).normalized;
+        Vector2 direction = (targetPosition - (Vector2)GetActiveSpitPoint().position).normalized;
+        Debug.Log($"[AntSpitter] CalculateTargetDirection - SpitPoint: {GetActiveSpitPoint().position}, TargetPos: {targetPosition}, Direction: {direction}");
         return direction;
     }
 
     private void SpawnProjectile(Vector2 direction)
     {
+        // Check if projectile prefab is valid
+        if (projectilePrefab == null)
+        {
+            Debug.LogError("[AntSpitter] ProjectilePrefab is null!");
+            return;
+        }
+        
+        // Use multiple spawn points if enabled and available
+        if (useMultipleSpitPoints && spitPoints != null && spitPoints.Length > 0)
+        {
+            SpawnProjectilesAtMultiplePoints(direction);
+        }
+        else
+        {
+            // Fallback to single spawn point
+            SpawnProjectileAtSinglePoint(direction, spitPoint);
+        }
+    }
+    
+    private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
+    {
+        for (int i = 0; i < spitPoints.Length; i++)
+        {
+            if (spitPoints[i] != null)
+            {
+                SpawnProjectileAtSinglePoint(direction, spitPoints[i]);
+            }
+            else
+            {
+                Debug.LogWarning($"[AntSpitter] SpitPoint at index {i} is null!");
+            }
+        }
+    }
+    
+    private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoint)
+    {
+        if (spawnPoint == null)
+        {
+            Debug.LogError("[AntSpitter] SpawnPoint is null!");
+            return;
+        }
+        
         // Calculate rotation angle towards target direction
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         
-        GameObject proj = Instantiate(projectilePrefab, spitPoint.position, rotation);
+        GameObject proj = Instantiate(projectilePrefab, spawnPoint.position, rotation);
 
         // Nastav směr projektilu a launch delay
         Projectiles projectile = proj.GetComponent<Projectiles>();
@@ -232,6 +291,10 @@ public class AntSpitter : MonsterPatrol
             projectile.SetLaunchDelay(projectileLaunchDelay);
             // Set speed on the spawned instance, not the prefab
             projectile.speed = projectileSpeed;
+        }
+        else
+        {
+            Debug.LogError("[AntSpitter] Projectile component not found on spawned projectile!");
         }
 
         // Poznámka: Rigidbody2D velocity se už nenastavuje, protože Projectiles script řídí pohyb
@@ -253,7 +316,7 @@ public class AntSpitter : MonsterPatrol
             // Zobraz predikovanou pozici
             if (usePredictiveAiming && playerRb != null)
             {
-                float timeToTarget = Vector2.Distance(spitPoint.position, playerTransform.position) / projectileSpeed;
+                float timeToTarget = Vector2.Distance(GetActiveSpitPoint().position, playerTransform.position) / projectileSpeed;
                 Vector2 predictedPos = (Vector2)playerTransform.position + playerRb.velocity * timeToTarget * predictionMultiplier;
                 Gizmos.color = Color.green;
                 Gizmos.DrawWireSphere(predictedPos, 0.5f);
@@ -261,9 +324,25 @@ public class AntSpitter : MonsterPatrol
             }
         }
 
-        // Zobraz spitPoint
-        if (spitPoint != null)
+        // Zobraz spitPoint(s)
+        if (useMultipleSpitPoints && spitPoints != null && spitPoints.Length > 0)
         {
+            // Zobraz všechny spitPoints
+            for (int i = 0; i < spitPoints.Length; i++)
+            {
+                if (spitPoints[i] != null)
+                {
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawWireSphere(spitPoints[i].position, 0.2f);
+                    // Zobraz číslo spitPointu
+                    Gizmos.color = Color.white;
+                    Gizmos.DrawWireCube(spitPoints[i].position + Vector3.up * 0.3f, Vector3.one * 0.1f);
+                }
+            }
+        }
+        else if (spitPoint != null)
+        {
+            // Zobraz single spitPoint
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(spitPoint.position, 0.2f);
         }
@@ -274,7 +353,8 @@ public class AntSpitter : MonsterPatrol
     {
         Debug.Log($"[AntSpitter] StartSpittingLock - Duration: {spittingLockDuration}s");
         isSpittingLocked = true;
-        isSpitting = true; // Set isSpitting to true during lock
+        // DON'T set isSpitting = true here! It should only be true during actual shooting
+        // isSpitting = true; // REMOVED - this was causing the ant to stay in shooting state
         spittingLockStartTime = Time.time;
         
         // No longer need the coroutine since we handle it in Update
@@ -330,6 +410,10 @@ public class AntSpitter : MonsterPatrol
         {
             Debug.Log("[AntSpitter] HandleRunAway - Run away duration ended");
             isRunningAway = false;
+            
+            // RE-ENABLE shooting capability after runaway completes
+            canShoot = true;
+            Debug.Log("[AntSpitter] canShoot set to TRUE - runaway completed");
             return;
         }
         
@@ -402,5 +486,21 @@ public class AntSpitter : MonsterPatrol
                 return true;
         }
         return false;
+    }
+
+    private Transform GetActiveSpitPoint()
+    {
+        if (useMultipleSpitPoints && spitPoints != null && spitPoints.Length > 0)
+        {
+            // Return the first valid spit point for calculations
+            for (int i = 0; i < spitPoints.Length; i++)
+            {
+                if (spitPoints[i] != null)
+                    return spitPoints[i];
+            }
+        }
+        
+        // Fallback to single spit point
+        return spitPoint;
     }
 }
