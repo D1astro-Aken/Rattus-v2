@@ -26,6 +26,10 @@ public class Projectiles : MonoBehaviour
     private bool isDestroying = false; // Prevent multiple destruction calls
     private bool isPositionLocked = false; // New state for locking position during animations
 
+      [Header("Sounds")]
+        [SerializeField] private AudioClip AudioClip1;
+        [SerializeField] private AudioClip AudioClip2;
+        [SerializeField] private AudioClip[] AudioClips1;
 // @SFX:ProjectileInit
 private void Start()
     {
@@ -112,10 +116,21 @@ private void OnTriggerEnter2D(Collider2D collision)
         if (collision.CompareTag("Player"))
         {
             Debug.Log("Projektil zasáhl hráče!");
-            
+
             // Lock position at current location for hit animation
             lockedPosition = transform.position;
             isPositionLocked = true;
+
+        if (SoundManager.instance != null)
+         {
+             if (AudioClips1 != null && AudioClips1.Length > 0)
+                 SoundManager.instance.PlayOneOf(AudioClips1);
+             else if (AudioClip1 != null)
+                 SoundManager.instance.PlaySound(AudioClip1);
+         }
+            
+            
+            
             
             // Play hit animation
             if (animator != null)
