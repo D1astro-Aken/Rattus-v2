@@ -32,6 +32,14 @@ public class AntSpitter : MonsterPatrol
     [Header("Projectile Launch Settings")]
     public float projectileLaunchDelay = 0.5f; // Doba čekání před vypuštěním projektilu
 
+    [Header("AmbientSounds")]
+    [SerializeField] private AudioSource ambientSource;
+    [SerializeField] private AudioClip[] ambientClips;
+    [SerializeField] private float ambientMinInterval = 6f;
+    [SerializeField] private float ambientMaxInterval = 15f;
+    [SerializeField] private float ambientVolume = 1f;
+    [SerializeField] private bool ambientPauseNearPlayer = false;
+
     private float lastSpitTime = -Mathf.Infinity;
     private bool canShoot = true; // NEW: Explicit canShoot control
     private bool isSpitting = false;
@@ -521,5 +529,43 @@ private Transform GetActiveSpitPoint()
         
         // Fallback to single spit point
         return spitPoint;
+    }
+    
+    // Ambient SFX configuration
+   
+    private Coroutine ambientRoutine;
+
+    // @SFX:AmbientInit
+    private void OnEnable()
+    {
+        if (ambientRoutine != null)
+            StopCoroutine(ambientRoutine);
+        ambientRoutine = StartCoroutine(AmbientLoop());
+    }
+
+    // @SFX:AmbientLoop
+    private IEnumerator AmbientLoop()
+    {
+        yield return new WaitForSeconds(Random.Range(ambientMinInterval, ambientMaxInterval));
+        while (enabled)
+        {
+            if (!ambientPauseNearPlayer || !IsPlayerInRange())
+            {
+                PlayRandomAmbientSound();
+            }
+            yield return new WaitForSeconds(Random.Range(ambientMinInterval, ambientMaxInterval));
+        }
+    }
+
+    // @SFX:AmbientPlay
+    private void PlayRandomAmbientSound()
+    {
+        if (ambientClips == null || ambientClips.Length == 0) return;
+        if (ambientSource == null) ambientSource = GetComponent<AudioSource>();
+        if (ambientSource == null) return;
+
+        int idx = Random.Range(0, ambientClips.Length);
+        AudioClip clip = ambientClips[idx];
+        ambientSource.PlayOneShot(clip, ambientVolume);
     }
 }
