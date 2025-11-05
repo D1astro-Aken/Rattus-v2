@@ -7,10 +7,12 @@ public class Healthbar : MonoBehaviour
     [SerializeField] private Image totalhealthBar;
     [SerializeField] private Image currenthealthBar;
 
+    // @SFX:UIHealthInit
     private void Start()
     {
         totalhealthBar.fillAmount = playerHealth.currentHealth / 100;
     }
+    // @SFX:UIHealthUpdate
     private void Update()
     {
         currenthealthBar.fillAmount = playerHealth.currentHealth / 100;

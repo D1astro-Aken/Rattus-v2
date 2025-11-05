@@ -107,6 +107,7 @@ public class PlayerMovement : MonoBehaviour
         defaultGravityScale = body.gravityScale;
     }
 
+    // @SFX:MovementUpdate
     private void Update()
     {
         horizontalInput = Input.GetAxis("Horizontal");
@@ -371,6 +372,7 @@ public class PlayerMovement : MonoBehaviour
             wallCooldownTimer -= Time.deltaTime;
     }
 
+    // @SFX:Jump
     private void Jump()
     {
         // Check if SoundManager exists before trying to play sound
@@ -400,6 +402,7 @@ public class PlayerMovement : MonoBehaviour
             anim.SetTrigger("jump");
     }
 
+    // @SFX:WallJump
     private void WallJump()
     {
         if (wallCooldownTimer > 0) return; // nelze během cooldownu
@@ -420,6 +423,7 @@ public class PlayerMovement : MonoBehaviour
             anim.SetTrigger("jump");
     }
 
+    // @SFX:ControlLock
     private IEnumerator DisableInputTemporarily(float duration)
     {
         isDashing = true;
@@ -427,6 +431,7 @@ public class PlayerMovement : MonoBehaviour
         isDashing = false;
     }
 
+    // @SFX:DashStart
     private void Dash()
     {
         // Zamez opakovanému air dashu během jedné vzdušné fáze
@@ -456,6 +461,7 @@ public class PlayerMovement : MonoBehaviour
          Invoke(nameof(EndDash), dashDuration);
     }
 
+    // @SFX:DashEnd
     private void EndDash()
     {
         isDashing = false;
@@ -463,6 +469,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // --- LEDGE FUNCTIONS ---
+    // @SFX:LedgeGrab
     private void StartLedgeGrab(Vector2 pos)
     {
         isGrabbingLedge = true;
@@ -470,6 +477,7 @@ public class PlayerMovement : MonoBehaviour
         hasSnapped = false;
     }
 
+    // @SFX:LedgeClimb
     private IEnumerator LedgeClimb()
     {
         // Debug.Log("Starting LedgeClimb coroutine");
@@ -532,6 +540,7 @@ public class PlayerMovement : MonoBehaviour
         // Debug.Log("LedgeClimb completed");
     }
 
+    // @SFX:LedgeJump
     private void LedgeJump()
     {
         isGrabbingLedge = false;
@@ -552,6 +561,7 @@ public class PlayerMovement : MonoBehaviour
         ledgeHitbox.ResetLedge(); // 🔹 odemkneme
     }
 
+    // @SFX:LedgeRelease
     private void ReleaseLedge()
     {
         isGrabbingLedge = false;
@@ -567,6 +577,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // --- STEP-UP MECHANISM ---
+    // @SFX:StepUp
     private Vector2 HandleStepUp(Vector2 targetVelocity)
     {
         float moveDirection = Mathf.Sign(horizontalInput);
@@ -623,6 +634,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // --- COLLISION CHECKS ---
+    // @SFX:GroundCheck
     public bool isGrounded()
     {
         // Kombinuj groundLayer a wallLayer pro detekci podlahy
@@ -639,6 +651,7 @@ public class PlayerMovement : MonoBehaviour
         return raycastHit.collider != null;
     }
 
+    // @SFX:WallCheck
     private bool onWall()
     {
         // Použij menší box pro detekci pouze ze strany
@@ -679,12 +692,14 @@ public class PlayerMovement : MonoBehaviour
         return raycastHit.collider != null;
     }
 
+    // @SFX:AttackReady
     public bool canAttack()
     {
         return horizontalInput == 0 && isGrounded() && !onWall();
     }
 
     // --- GIZMOS ---
+    // @SFX:DebugGizmos
     private void OnDrawGizmosSelected()
     {
         if (ledgeHitbox == null) return;

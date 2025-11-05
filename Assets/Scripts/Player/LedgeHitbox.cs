@@ -20,11 +20,13 @@ public class LedgeHitbox : MonoBehaviour
     private float lastDetectionTime = 0f;
     private PlayerMovement playerMovement;
 
+    // @SFX:LedgeDetectInit
     private void Start()
     {
         playerMovement = GetComponentInParent<PlayerMovement>();
     }
 
+    // @SFX:LedgeDetectLoop
     private void Update()
     {
         // Don't run detection if already grabbing a ledge
@@ -43,6 +45,7 @@ public class LedgeHitbox : MonoBehaviour
         }
     }
 
+    // @SFX:LedgeDetect
     private bool DetectLedgeWithOverlapBox()
     {
         float direction = Mathf.Sign(transform.root.localScale.x);
@@ -64,6 +67,7 @@ public class LedgeHitbox : MonoBehaviour
         return false;
     }
 
+    // @SFX:LedgeCheckDirection
     private bool CheckLedgeInDirection(Vector2 playerPos, float direction)
     {
         // Kombinovaný layer mask pro detekci ledge - zahrnuje ground i wall objekty
@@ -125,12 +129,14 @@ public class LedgeHitbox : MonoBehaviour
         return true;
     }
 
+    // @SFX:LedgeReset
     public void ResetLedge()
     {
         canGrab = false;
     }
 
     // --- DEBUG GIZMOS ---
+    // @SFX:DebugGizmos
     private void OnDrawGizmosSelected()
     {
         if (!Application.isPlaying)

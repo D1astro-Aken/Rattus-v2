@@ -18,6 +18,7 @@ public class Health : MonoBehaviour
     [SerializeField] private Vector3 respawnPoint;
     [SerializeField] private float respawnDelay = 2f;
 
+    // @SFX:Init
     private void Awake()
     {
         currentHealth = startingHealth;
@@ -26,6 +27,7 @@ public class Health : MonoBehaviour
         respawnPoint = transform.position; // Set initial respawn point to starting position
     }
 
+    // @SFX:Hurt
     public void TakeDamage(float _damage)
     {
         if (dead) return;
@@ -52,11 +54,13 @@ public class Health : MonoBehaviour
         }
     }
 
+    // @SFX:Heal
     public void AddHealth(float _value)
     {
         currentHealth = Mathf.Clamp(currentHealth + _value, 0, startingHealth);
     }
 
+    // @SFX:Invulnerability
     private IEnumerator Invulnerability()
     {
         Physics2D.IgnoreLayerCollision(3, 9, true); // Disable collisions
@@ -70,6 +74,7 @@ public class Health : MonoBehaviour
         Physics2D.IgnoreLayerCollision(3, 9, false); // Re-enable collisions
     }
 
+    // @SFX:Respawn
     private IEnumerator Respawn()
     {
         yield return new WaitForSeconds(respawnDelay);
@@ -90,6 +95,7 @@ public class Health : MonoBehaviour
     }
 
     // Call this method to set a new respawn point (e.g., from a checkpoint)
+    // @SFX:SetRespawnPoint
     public void SetRespawnPoint(Vector3 newPoint)
     {
         respawnPoint = newPoint;

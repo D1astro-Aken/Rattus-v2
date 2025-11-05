@@ -28,6 +28,7 @@ public class PlayerAttack : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
+    // @SFX:AttackInput
     private void Update()
     {
         if (Input.GetMouseButtonDown(0) && cooldownTimer > attackCooldown && !isAttacking && playerMovement.isGrounded())
@@ -39,6 +40,7 @@ public class PlayerAttack : MonoBehaviour
         cooldownTimer += Time.deltaTime;
     }
 
+    // @SFX:AttackStart
     private IEnumerator PerformAttack()
     {
         isAttacking = true;
@@ -61,6 +63,7 @@ public class PlayerAttack : MonoBehaviour
         isAttacking = false;
     }
 
+    // @SFX:AttackHit
     private void ApplyDamage()
     {
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, Enemies);
@@ -76,6 +79,7 @@ public class PlayerAttack : MonoBehaviour
         }
     }
 
+    // @SFX:DebugGizmos
     private void OnDrawGizmosSelected()
     {
         if (attackPoint != null)

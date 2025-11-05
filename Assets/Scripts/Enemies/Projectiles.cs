@@ -26,7 +26,8 @@ public class Projectiles : MonoBehaviour
     private bool isDestroying = false; // Prevent multiple destruction calls
     private bool isPositionLocked = false; // New state for locking position during animations
 
-    private void Start()
+// @SFX:ProjectileInit
+private void Start()
     {
         spawnPosition = transform.position;
         animator = GetComponent<Animator>();
@@ -41,7 +42,8 @@ public class Projectiles : MonoBehaviour
         Destroy(gameObject, lifeTime + launchDelay + destroyAnimationDuration + 1f); // Include animation duration
     }
 
-    public void SetDirection(Vector2 dir)
+// @SFX:ProjectileSetDir
+public void SetDirection(Vector2 dir)
     {
         direction = dir.normalized;
         Debug.Log($"[Projectiles] SetDirection called with: {dir}, normalized: {direction}");
@@ -54,12 +56,14 @@ public class Projectiles : MonoBehaviour
         }
     }
     
-    public void SetLaunchDelay(float delay)
+// @SFX:ProjectileSetDelay
+public void SetLaunchDelay(float delay)
     {
         launchDelay = delay;
     }
 
-    private IEnumerator LaunchAfterDelay()
+// @SFX:ProjectileLaunchDelayed
+private IEnumerator LaunchAfterDelay()
     {
         yield return new WaitForSeconds(launchDelay);
         isLaunched = true;
@@ -74,7 +78,8 @@ public class Projectiles : MonoBehaviour
         Debug.Log("Projektil byl vypuštěn po delay!");
     }
 
-    private void Update()
+// @SFX:ProjectileUpdate
+private void Update()
     {
         if (isPositionLocked)
         {
@@ -97,7 +102,8 @@ public class Projectiles : MonoBehaviour
         // Note: Using transform.position instead of transform.Translate to move in world space
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+// @SFX:ProjectileHit
+private void OnTriggerEnter2D(Collider2D collision)
     {
         if (isDestroying) return; // Prevent multiple collision handling
         
@@ -180,7 +186,8 @@ public class Projectiles : MonoBehaviour
         }
     }
     
-    private IEnumerator DestroyAfterAnimation()
+// @SFX:ProjectileDestroy
+private IEnumerator DestroyAfterAnimation()
     {
         isDestroying = true;
         

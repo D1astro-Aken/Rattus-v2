@@ -47,7 +47,8 @@ public class AntSpitter : MonsterPatrol
     private float runAwayStartTime;
     private Vector2 runAwayDirection;
 
-    protected override void Start()
+// @SFX:SpitterInit
+protected override void Start()
     {
         base.Start();
 
@@ -69,7 +70,8 @@ public class AntSpitter : MonsterPatrol
         // Note: We set projectile speed on each spawned instance, not on the prefab
     }
 
-    protected override void Update()
+// @SFX:SpitterUpdate
+protected override void Update()
     {
         // Handle run away mechanic FIRST - it has ABSOLUTE highest priority
         // NOTHING can interrupt run away once it starts
@@ -144,12 +146,14 @@ public class AntSpitter : MonsterPatrol
         }
     }
 
-    private bool IsPlayerInRange()
+// @SFX:TargetCheck
+private bool IsPlayerInRange()
     {
         return Vector2.Distance(transform.position, playerTransform.position) <= spittingDistance;
     }
 
-    private bool CanSpit()
+// @SFX:SpitReady
+private bool CanSpit()
     {
         // Can only spit if:
         // 1. Explicitly allowed to shoot (canShoot)
@@ -165,7 +169,8 @@ public class AntSpitter : MonsterPatrol
         return canSpit;
     }
 
-    private void FacePlayer()
+// @SFX:Aim
+private void FacePlayer()
     {
         Vector2 direction = (playerTransform.position - transform.position).normalized;
         if (direction.x < 0)
@@ -174,7 +179,8 @@ public class AntSpitter : MonsterPatrol
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
     }
 
-    private void Spit()
+// @SFX:SpitStart
+private void Spit()
     {
         if (projectilePrefab != null && spitPoint != null)
         {
@@ -183,7 +189,8 @@ public class AntSpitter : MonsterPatrol
         }
     }
 
-    private IEnumerator BurstSpit()
+// @SFX:SpitBurst
+private IEnumerator BurstSpit()
     {
         Debug.Log($"[AntSpitter] BurstSpit started - isSpitting: {isSpitting}");
         isSpitting = true;
@@ -211,7 +218,8 @@ public class AntSpitter : MonsterPatrol
         isSpitting = false;
     }
 
-    private Vector2 CalculateTargetDirection()
+// @SFX:AimPredict
+private Vector2 CalculateTargetDirection()
     {
         if (playerTransform == null) return Vector2.right;
         
@@ -233,7 +241,8 @@ public class AntSpitter : MonsterPatrol
         return direction;
     }
 
-    private void SpawnProjectile(Vector2 direction)
+// @SFX:SpitFire
+private void SpawnProjectile(Vector2 direction)
     {
         // Check if projectile prefab is valid
         if (projectilePrefab == null)
@@ -254,7 +263,8 @@ public class AntSpitter : MonsterPatrol
         }
     }
     
-    private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
+// @SFX:SpitFireMulti
+private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
     {
         for (int i = 0; i < spitPoints.Length; i++)
         {
@@ -269,7 +279,8 @@ public class AntSpitter : MonsterPatrol
         }
     }
     
-    private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoint)
+// @SFX:SpitFireSingle
+private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoint)
     {
         if (spawnPoint == null)
         {
@@ -301,7 +312,8 @@ public class AntSpitter : MonsterPatrol
     }
 
     // Debug vizualizace v editoru
-    private void OnDrawGizmosSelected()
+// @SFX:DebugGizmos
+private void OnDrawGizmosSelected()
     {
         // Zobraz dosah střelby
         Gizmos.color = Color.red;
@@ -349,7 +361,8 @@ public class AntSpitter : MonsterPatrol
     }
 
     // Spitting lock mechanics
-    private void StartSpittingLock()
+// @SFX:SpitLock
+private void StartSpittingLock()
     {
         Debug.Log($"[AntSpitter] StartSpittingLock - Duration: {spittingLockDuration}s");
         isSpittingLocked = true;
@@ -361,7 +374,8 @@ public class AntSpitter : MonsterPatrol
     }
     
     // This method is no longer needed since we handle spitting lock directly in Update
-    /*
+/*
+    // @SFX:SpitLockEnd
     private IEnumerator HandleSpittingLockEnd()
     {
         Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Waiting {spittingLockDuration}s");
@@ -382,7 +396,8 @@ public class AntSpitter : MonsterPatrol
     */
 
     // Run away mechanic methods
-    private void StartRunAway()
+// @SFX:RunAwayStart
+private void StartRunAway()
     {
         if (playerTransform == null) return;
         
@@ -401,7 +416,8 @@ public class AntSpitter : MonsterPatrol
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
     }
     
-    private void HandleRunAway()
+// @SFX:RunAwayLoop
+private void HandleRunAway()
     {
         Debug.Log($"[AntSpitter] HandleRunAway - Time elapsed: {Time.time - runAwayStartTime}/{runAwayDuration}");
         
@@ -426,7 +442,8 @@ public class AntSpitter : MonsterPatrol
     }
     
     // Animation management
-    private void UpdateAnimationStates()
+// @SFX:AnimState
+private void UpdateAnimationStates()
     {
         if (anim == null) return;
         
@@ -476,7 +493,8 @@ public class AntSpitter : MonsterPatrol
     }
 
     // Pomocná metoda pro kontrolu existence animator parametru
-    private bool HasAnimatorParameter(string paramName)
+// @SFX:AnimParamCheck
+private bool HasAnimatorParameter(string paramName)
     {
         if (anim == null) return false;
         
@@ -488,7 +506,8 @@ public class AntSpitter : MonsterPatrol
         return false;
     }
 
-    private Transform GetActiveSpitPoint()
+// @SFX:ActiveSpitPoint
+private Transform GetActiveSpitPoint()
     {
         if (useMultipleSpitPoints && spitPoints != null && spitPoints.Length > 0)
         {

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class ChargingEnemy : MonsterPatrol
@@ -17,7 +17,8 @@ public class ChargingEnemy : MonsterPatrol
     private bool canCharge = true;
     private bool isStunned = false;
 
-    protected override void Start()
+// @SFX:EnemyInit
+protected override void Start()
     {
         base.Start();
 
@@ -29,7 +30,8 @@ public class ChargingEnemy : MonsterPatrol
         }
     }
 
-    protected override void Update()
+// @SFX:EnemyUpdate
+protected override void Update()
     {
         if (!enableCharge)
         {
@@ -50,13 +52,15 @@ public class ChargingEnemy : MonsterPatrol
         }
     }
 
-    private void TryCharge()
+// @SFX:ChargeTrigger
+private void TryCharge()
     {
         if (canCharge)
             StartCoroutine(ChargeSequence());
     }
 
-    private IEnumerator ChargeSequence()
+// @SFX:ChargeSequence
+private IEnumerator ChargeSequence()
     {
         isCharging = true;
         canCharge = false;
