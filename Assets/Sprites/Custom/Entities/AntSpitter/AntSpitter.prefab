@@ -73,10 +73,11 @@ GameObject:
   - component: {fileID: 8050727836913144230}
   - component: {fileID: 399542531530450864}
   - component: {fileID: 7522097281709008020}
-  - component: {fileID: 7262516159389891897}
   - component: {fileID: 1855056965059849500}
   - component: {fileID: 1837018811500351171}
   - component: {fileID: 2560224072157040155}
+  - component: {fileID: 9195546882146233604}
+  - component: {fileID: 1601535027019928748}
   m_Layer: 9
   m_Name: AntSpitter
   m_TagString: Enemy
@@ -175,42 +176,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7262516159389891897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3013276354371822749}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47ab8a566861b274dacd64a3f09866a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  patrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  moveSpeed: 2
-  playerTransform: {fileID: 0}
-  shootingDistance: 6.64
-  shootCooldown: 1.29
-  projectilePrefab: {fileID: 2634710003537273880, guid: eb4c8faeed7ea774e980936c6c74be2c, type: 3}
-  firePoint: {fileID: 2277904517359644464}
-  firePoints:
-  - {fileID: 2277904517359644464}
-  - {fileID: 8319356677578159439}
-  - {fileID: 2866029577157004429}
-  useMultipleSpawnPoints: 1
-  projectileSpeed: 7
-  usePredictiveAiming: 1
-  predictionMultiplier: 1
-  useBurstFire: 1
-  burstCount: 1
-  burstDelay: 0.3
-  projectileLaunchDelay: 0.5
-  runAwayDuration: 2.5
-  runAwaySpeed: 6
-  runAwayDistance: 9
 --- !u!61 &1855056965059849500
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -318,6 +283,149 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &9195546882146233604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3013276354371822749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a8b110652e36d24d86d6551bf69bfed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  patrolPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  moveSpeed: 2
+  playerTransform: {fileID: 0}
+  spittingDistance: 6
+  spitCooldown: 2.5
+  projectilePrefab: {fileID: 2634710003537273880, guid: eb4c8faeed7ea774e980936c6c74be2c, type: 3}
+  spitPoint: {fileID: 2277904517359644464}
+  useMultipleSpitPoints: 1
+  spitPoints:
+  - {fileID: 2277904517359644464}
+  - {fileID: 8319356677578159439}
+  - {fileID: 2866029577157004429}
+  projectileSpeed: 8
+  usePredictiveAiming: 1
+  predictionMultiplier: 1
+  runAwayDuration: 2
+  runAwaySpeed: 4
+  runAwayDistance: 5
+  useBurstFire: 1
+  burstCount: 1
+  burstDelay: 0.2
+  projectileLaunchDelay: 0.5
+  ambientSource: {fileID: 1601535027019928748}
+  ambientClips:
+  - {fileID: 8300000, guid: aa1cb3b023a04e344a302d4a5036757f, type: 3}
+  - {fileID: 8300000, guid: 97141e5898c59714684f819def6f1681, type: 3}
+  - {fileID: 8300000, guid: 8b8dc37af00d81f49a9bcc0a8a37a39d, type: 3}
+  - {fileID: 8300000, guid: 4459ae2db0a939144b31fef80fab9c7c, type: 3}
+  - {fileID: 8300000, guid: 37d5b3315a36f8943bffb9ef301bf792, type: 3}
+  ambientMinInterval: 6
+  ambientMaxInterval: 15
+  ambientVolume: 1
+  ambientPauseNearPlayer: 0
+--- !u!82 &1601535027019928748
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3013276354371822749}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 0.38
+  m_Pitch: 3
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 1
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &4803160953790148843
 GameObject:
   m_ObjectHideFlags: 0

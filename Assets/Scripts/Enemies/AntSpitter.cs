@@ -35,10 +35,16 @@ public class AntSpitter : MonsterPatrol
     [Header("AmbientSounds")]
     [SerializeField] private AudioSource ambientSource;
     [SerializeField] private AudioClip[] ambientClips;
-    [SerializeField] private float ambientMinInterval = 6f;
-    [SerializeField] private float ambientMaxInterval = 15f;
+    [SerializeField] private float ambientMinInterval = 4f;
+    [SerializeField] private float ambientMaxInterval = 8f;
     [SerializeField] private float ambientVolume = 1f;
     [SerializeField] private bool ambientPauseNearPlayer = false;
+
+    [Header("Alert Sound")]
+    [SerializeField] private AudioClip alertClip;
+    [SerializeField] private float alertVolume = 1f;
+    // tady bude cooldown, at to nemuzes spamovat jj
+    private bool hasAlertedPlayer = false;
 
     private float lastSpitTime = -Mathf.Infinity;
     private bool canShoot = true; // NEW: Explicit canShoot control
@@ -55,8 +61,8 @@ public class AntSpitter : MonsterPatrol
     private float runAwayStartTime;
     private Vector2 runAwayDirection;
 
-// @SFX:SpitterInit
-protected override void Start()
+    // @SFX:SpitterInit
+    protected override void Start()
     {
         base.Start();
 
@@ -75,11 +81,17 @@ protected override void Start()
             playerRb = playerTransform.GetComponent<Rigidbody2D>();
         }
 
+        // Ensure we have an AudioSource reference to use for ambient and alert sounds
+        if (ambientSource == null)
+        {
+            ambientSource = GetComponent<AudioSource>();
+        }
+
         // Note: We set projectile speed on each spawned instance, not on the prefab
     }
 
-// @SFX:SpitterUpdate
-protected override void Update()
+    // @SFX:SpitterUpdate
+    protected override void Update()
     {
         // Handle run away mechanic FIRST - it has ABSOLUTE highest priority
         // NOTHING can interrupt run away once it starts
@@ -123,6 +135,29 @@ protected override void Update()
         {
             FacePlayer();
 
+            // ===== ALERT SOUND: play once when enemy first sees the player =====
+            if (!hasAlertedPlayer)
+            {
+                hasAlertedPlayer = true;
+                if (alertClip != null)
+                {
+                    // ensure we have a source (try to get it if null)
+                    if (ambientSource == null)
+                        ambientSource = GetComponent<AudioSource>();
+
+                    if (ambientSource != null)
+                    {
+                        ambientSource.PlayOneShot(alertClip, alertVolume);
+                        Debug.Log("[AntSpitter] Alert clip played");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[AntSpitter] No AudioSource available to play alert clip!");
+                    }
+                }
+            }
+            // =================================================================
+
             if (CanSpit())
             {
                 // DISABLE shooting capability immediately after shooting starts
@@ -148,20 +183,24 @@ protected override void Update()
         }
         else
         {
+            // Player is out of range - reset alert flag so it can alert again later
+            hasAlertedPlayer = false;
+
             // Player is out of range - only patrol if we're not in any shooting state
             base.Update(); // Patrol
             UpdateAnimationStates();
         }
     }
 
-// @SFX:TargetCheck
-private bool IsPlayerInRange()
+    // @SFX:TargetCheck
+    private bool IsPlayerInRange()
     {
+        if (playerTransform == null) return false;
         return Vector2.Distance(transform.position, playerTransform.position) <= spittingDistance;
     }
 
-// @SFX:SpitReady
-private bool CanSpit()
+    // @SFX:SpitReady
+    private bool CanSpit()
     {
         // Can only spit if:
         // 1. Explicitly allowed to shoot (canShoot)
@@ -177,9 +216,10 @@ private bool CanSpit()
         return canSpit;
     }
 
-// @SFX:Aim
-private void FacePlayer()
+    // @SFX:Aim
+    private void FacePlayer()
     {
+        if (playerTransform == null) return;
         Vector2 direction = (playerTransform.position - transform.position).normalized;
         if (direction.x < 0)
             transform.localScale = new Vector3(-Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
@@ -187,8 +227,8 @@ private void FacePlayer()
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
     }
 
-// @SFX:SpitStart
-private void Spit()
+    // @SFX:SpitStart
+    private void Spit()
     {
         if (projectilePrefab != null && spitPoint != null)
         {
@@ -197,8 +237,8 @@ private void Spit()
         }
     }
 
-// @SFX:SpitBurst
-private IEnumerator BurstSpit()
+    // @SFX:SpitBurst
+    private IEnumerator BurstSpit()
     {
         Debug.Log($"[AntSpitter] BurstSpit started - isSpitting: {isSpitting}");
         isSpitting = true;
@@ -226,8 +266,8 @@ private IEnumerator BurstSpit()
         isSpitting = false;
     }
 
-// @SFX:AimPredict
-private Vector2 CalculateTargetDirection()
+    // @SFX:AimPredict
+    private Vector2 CalculateTargetDirection()
     {
         if (playerTransform == null) return Vector2.right;
         
@@ -249,8 +289,8 @@ private Vector2 CalculateTargetDirection()
         return direction;
     }
 
-// @SFX:SpitFire
-private void SpawnProjectile(Vector2 direction)
+    // @SFX:SpitFire
+    private void SpawnProjectile(Vector2 direction)
     {
         // Check if projectile prefab is valid
         if (projectilePrefab == null)
@@ -271,8 +311,8 @@ private void SpawnProjectile(Vector2 direction)
         }
     }
     
-// @SFX:SpitFireMulti
-private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
+    // @SFX:SpitFireMulti
+    private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
     {
         for (int i = 0; i < spitPoints.Length; i++)
         {
@@ -287,8 +327,8 @@ private void SpawnProjectilesAtMultiplePoints(Vector2 direction)
         }
     }
     
-// @SFX:SpitFireSingle
-private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoint)
+    // @SFX:SpitFireSingle
+    private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoint)
     {
         if (spawnPoint == null)
         {
@@ -320,8 +360,8 @@ private void SpawnProjectileAtSinglePoint(Vector2 direction, Transform spawnPoin
     }
 
     // Debug vizualizace v editoru
-// @SFX:DebugGizmos
-private void OnDrawGizmosSelected()
+    // @SFX:DebugGizmos
+    private void OnDrawGizmosSelected()
     {
         // Zobraz dosah střelby
         Gizmos.color = Color.red;
@@ -369,8 +409,8 @@ private void OnDrawGizmosSelected()
     }
 
     // Spitting lock mechanics
-// @SFX:SpitLock
-private void StartSpittingLock()
+    // @SFX:SpitLock
+    private void StartSpittingLock()
     {
         Debug.Log($"[AntSpitter] StartSpittingLock - Duration: {spittingLockDuration}s");
         isSpittingLocked = true;
@@ -381,31 +421,9 @@ private void StartSpittingLock()
         // No longer need the coroutine since we handle it in Update
     }
     
-    // This method is no longer needed since we handle spitting lock directly in Update
-/*
-    // @SFX:SpitLockEnd
-    private IEnumerator HandleSpittingLockEnd()
-    {
-        Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Waiting {spittingLockDuration}s");
-        yield return new WaitForSeconds(spittingLockDuration);
-        
-        Debug.Log($"[AntSpitter] HandleSpittingLockEnd - Lock ended, starting run away");
-        // After spitting lock ends, always start running away regardless of player position
-        if (!isRunningAway && playerTransform != null)
-        {
-            Debug.Log("[AntSpitter] Starting run away after spitting lock");
-            StartRunAway();
-        }
-        else
-        {
-            Debug.Log($"[AntSpitter] Not starting run away - isRunningAway: {isRunningAway}, playerTransform: {playerTransform != null}");
-        }
-    }
-    */
-
     // Run away mechanic methods
-// @SFX:RunAwayStart
-private void StartRunAway()
+    // @SFX:RunAwayStart
+    private void StartRunAway()
     {
         if (playerTransform == null) return;
         
@@ -424,8 +442,8 @@ private void StartRunAway()
             transform.localScale = new Vector3(Mathf.Abs(originalScale.x), originalScale.y, originalScale.z);
     }
     
-// @SFX:RunAwayLoop
-private void HandleRunAway()
+    // @SFX:RunAwayLoop
+    private void HandleRunAway()
     {
         Debug.Log($"[AntSpitter] HandleRunAway - Time elapsed: {Time.time - runAwayStartTime}/{runAwayDuration}");
         
@@ -450,8 +468,8 @@ private void HandleRunAway()
     }
     
     // Animation management
-// @SFX:AnimState
-private void UpdateAnimationStates()
+    // @SFX:AnimState
+    private void UpdateAnimationStates()
     {
         if (anim == null) return;
         
@@ -501,8 +519,8 @@ private void UpdateAnimationStates()
     }
 
     // Pomocná metoda pro kontrolu existence animator parametru
-// @SFX:AnimParamCheck
-private bool HasAnimatorParameter(string paramName)
+    // @SFX:AnimParamCheck
+    private bool HasAnimatorParameter(string paramName)
     {
         if (anim == null) return false;
         
@@ -514,8 +532,8 @@ private bool HasAnimatorParameter(string paramName)
         return false;
     }
 
-// @SFX:ActiveSpitPoint
-private Transform GetActiveSpitPoint()
+    // @SFX:ActiveSpitPoint
+    private Transform GetActiveSpitPoint()
     {
         if (useMultipleSpitPoints && spitPoints != null && spitPoints.Length > 0)
         {
