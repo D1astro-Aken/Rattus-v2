@@ -100,6 +100,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float wallDetachInputThreshold = 0.3f; // práh pro "odtlačování" od zdi
     [SerializeField] private float wallReattachDelay = 0.12f; // po wall jumpu dočasně nechytej zdi
 
+    [Header("Wall Slide Reset")]
+    [SerializeField] private float wallSlideResetTime = 0.2f; // krátká lhůta bez slide po znovu-připojení
+    private float lastWallAttachTime = -999f;
+
     [Header("Sounds")]
     [SerializeField] private AudioClip jumpSound;
     [SerializeField] private AudioClip dashSound;
@@ -336,25 +340,35 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
             Dash();
 
-        // Dynamic gravity for better jump feel (with Apex Assist)
-        if (!isGrounded() && Mathf.Abs(body.velocity.y) < apexThreshold)
+        // Wall slide reset grace: krátce po reattachu neklouzej
+        if (onWall() && !isGrounded() && (Time.time - lastWallAttachTime) <= wallSlideResetTime)
         {
-            body.gravityScale = defaultGravityScale * apexGravityMultiplier;
-        }
-        else if (body.velocity.y < 0)
-        {
-            // Rychlejší pád
-            body.gravityScale = defaultGravityScale * fallGravityMultiplier;
-        }
-        else if (body.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
-        {
-            // Rychlejší pád při uvolnění tlačítka během vzletu
-            body.gravityScale = defaultGravityScale * lowJumpMultiplier;
+            body.gravityScale = 0f;
+            if (body.velocity.y < 0)
+                body.velocity = new Vector2(body.velocity.x, 0f);
         }
         else
         {
-            // Normální gravitace během vzletu při držení tlačítka
-            body.gravityScale = defaultGravityScale;
+            // Dynamic gravity for better jump feel (with Apex Assist)
+            if (!isGrounded() && Mathf.Abs(body.velocity.y) < apexThreshold)
+            {
+                body.gravityScale = defaultGravityScale * apexGravityMultiplier;
+            }
+            else if (body.velocity.y < 0)
+            {
+                // Rychlejší pád
+                body.gravityScale = defaultGravityScale * fallGravityMultiplier;
+            }
+            else if (body.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
+            {
+                // Rychlejší pád při uvolnění tlačítka během vzletu
+                body.gravityScale = defaultGravityScale * lowJumpMultiplier;
+            }
+            else
+            {
+                // Normální gravitace během vzletu při držení tlačítka
+                body.gravityScale = defaultGravityScale;
+            }
         }
 
         // Omezení maximální rychlosti pádu
@@ -787,6 +801,8 @@ public class PlayerMovement : MonoBehaviour
             }
             lastWallTouchTime = Time.time;
             lastWallNormalX = wallHit.normal.x;
+            // záznam času reattachu pro reset slide
+            lastWallAttachTime = Time.time;
             return true;
         }
 
