@@ -62,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpBufferTime = 0.1f; // Buffer pro skok
     [SerializeField] private float maxJumpTime = 0.35f; // Maximální doba držení skoku
     [SerializeField] private float maxFallSpeed = 15f; // Maximální rychlost pádu
+    [SerializeField] private AudioClip wallAttachSound;
     
     // --- Acceleration/Deceleration ---
     [Header("Acceleration")]
@@ -158,7 +159,15 @@ public class PlayerMovement : MonoBehaviour
         {
             anim.SetBool("grounded", isGrounded());
         }
-        anim.SetBool("onwall", onWall());
+    //@SFX: WallOnSound
+        bool onWallNow = onWall();
+        anim.SetBool("onwall", onWallNow);
+        if (onWallNow && !prevOnWall)
+        {
+            if (SoundManager.instance != null && wallAttachSound != null)
+                SoundManager.instance.PlaySound(wallAttachSound);
+        }
+        prevOnWall = onWallNow;
 
         // Idle Sit logic: enter sit state after being idle on ground for a while
         bool noHorizontalInput = Mathf.Abs(horizontalInput) < 0.01f;
