@@ -63,7 +63,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float maxJumpTime = 0.35f; // Maximální doba držení skoku
     [SerializeField] private float maxFallSpeed = 15f; // Maximální rychlost pádu
     [SerializeField] private AudioClip wallAttachSound;
-    
+    [SerializeField] private AudioClip[] wallAttachSounds;
+
     // --- Acceleration/Deceleration ---
     [Header("Acceleration")]
     [SerializeField] private float groundAcceleration = 60f;
@@ -115,6 +116,7 @@ public class PlayerMovement : MonoBehaviour
 
     private float defaultGravityScale;
     private float lastFacingDirection = 1f;
+    private bool prevOnWall = false;
 
     // Wall stability state
     private float lastWallTouchTime = -999f;
@@ -159,13 +161,17 @@ public class PlayerMovement : MonoBehaviour
         {
             anim.SetBool("grounded", isGrounded());
         }
-    //@SFX: WallOnSound
         bool onWallNow = onWall();
         anim.SetBool("onwall", onWallNow);
-        if (onWallNow && !prevOnWall)
+        if (onWallNow && !prevOnWall && !isGrabbingLedge)
         {
-            if (SoundManager.instance != null && wallAttachSound != null)
-                SoundManager.instance.PlaySound(wallAttachSound);
+            if (SoundManager.instance != null)
+            {
+                if (wallAttachSounds != null && wallAttachSounds.Length > 0)
+                    SoundManager.instance.PlayOneOf(wallAttachSounds);
+                else if (wallAttachSound != null)
+                    SoundManager.instance.PlaySound(wallAttachSound);
+            }
         }
         prevOnWall = onWallNow;
 
