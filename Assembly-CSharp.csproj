@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\Enemies\Projectiles.cs" />
     <Compile Include="Assets\Scripts\Core\CameraFollow.cs" />
     <Compile Include="Assets\Sprites\Custom\BackGrounds\Parallax.cs" />
+    <Compile Include="Assets\Scripts\Core\ScenePortal.cs" />
     <Compile Include="Assets\Scripts\Enemies\AmbushEnemy.cs" />
     <Compile Include="Assets\Scripts\Collectibles\HealthCollectibles.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttack.cs" />
