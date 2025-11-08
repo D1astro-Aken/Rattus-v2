@@ -135,6 +135,10 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: dashSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 023e025e27659c44390e8367c4acf3aa, type: 3}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: jumpSound
       value: 
       objectReference: {fileID: 8300000, guid: 3d4fbfc42fbbbf742a0d2f49eff417c1, type: 3}
