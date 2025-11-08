@@ -13,12 +13,17 @@ public class ChargingEnemy : MonsterPatrol
     public float chargeCooldown = 3f;
     public float stunDuration = 1f;
 
+    [Header("Charge Impact Sounds")]
+    public AudioClip playerImpactSFX;
+    public AudioClip wallImpactSFX;
+    public AudioSource audioSource;
+
     private bool isCharging = false;
     private bool canCharge = true;
     private bool isStunned = false;
 
-// @SFX:EnemyInit
-protected override void Start()
+    // @SFX:EnemyInit
+    protected override void Start()
     {
         base.Start();
 
@@ -30,8 +35,8 @@ protected override void Start()
         }
     }
 
-// @SFX:EnemyUpdate
-protected override void Update()
+    // @SFX:EnemyUpdate
+    protected override void Update()
     {
         if (!enableCharge)
         {
@@ -52,15 +57,15 @@ protected override void Update()
         }
     }
 
-// @SFX:ChargeTrigger
-private void TryCharge()
+    // @SFX:ChargeTrigger
+    private void TryCharge()
     {
         if (canCharge)
             StartCoroutine(ChargeSequence());
     }
 
-// @SFX:ChargeSequence
-private IEnumerator ChargeSequence()
+    // @SFX:ChargeSequence
+    private IEnumerator ChargeSequence()
     {
         isCharging = true;
         canCharge = false;
@@ -107,5 +112,20 @@ private IEnumerator ChargeSequence()
         yield return new WaitForSeconds(chargeCooldown);
         canCharge = true;
         isCharging = false;
+    }
+
+    // @SFX:ChargeImpact
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!isCharging) return;
+
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            audioSource?.PlayOneShot(playerImpactSFX);
+        }
+        else if (collision.gameObject.CompareTag("Wall"))
+        {
+            audioSource?.PlayOneShot(wallImpactSFX);
+        }
     }
 }

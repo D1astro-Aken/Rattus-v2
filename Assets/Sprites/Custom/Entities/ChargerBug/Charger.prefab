@@ -322,3 +322,6 @@ MonoBehaviour:
   chargeDuration: 1
   chargeCooldown: 3.24
   stunDuration: 0.82
+  playerImpactSFX: {fileID: 8300000, guid: 5ec2992e0adade243b091ecf9b29a1dd, type: 3}
+  wallImpactSFX: {fileID: 0}
+  audioSource: {fileID: 0}
