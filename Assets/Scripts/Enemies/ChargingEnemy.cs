@@ -13,10 +13,14 @@ public class ChargingEnemy : MonsterPatrol
     public float chargeCooldown = 3f;
     public float stunDuration = 1f;
 
-    [Header("Charge Impact Sounds")]
-    public AudioClip playerImpactSFX;
-    public AudioClip wallImpactSFX;
-    public AudioSource audioSource;
+    [Header("Sounds")]
+        [SerializeField] private AudioClip[] AudioClips1;
+    
+    [Header("Alert Sound")]
+    [SerializeField] private AudioSource ambientSource;
+    [SerializeField] private AudioClip alertClip;
+    [SerializeField] private float alertVolume = 1f;
+    private bool hasAlertedPlayer = false;
 
     private bool isCharging = false;
     private bool canCharge = true;
@@ -48,11 +52,24 @@ public class ChargingEnemy : MonsterPatrol
             return;
 
         if (playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) < triggerDistance)
-        {
+        { if (!hasAlertedPlayer)
+            {
+                hasAlertedPlayer = true;
+                if (alertClip != null)
+                {
+                    if (ambientSource == null)
+                        ambientSource = GetComponent<AudioSource>();
+
+                    if (ambientSource != null)
+                        ambientSource.PlayOneShot(alertClip, alertVolume);
+                    else
+                        Debug.LogWarning("[ChargingEnemy] No AudioSource available to play alert clip!");
+                }
+            }
             TryCharge();
         }
         else
-        {
+        { hasAlertedPlayer = false;
             base.Update(); // jinak patrol
         }
     }
@@ -96,6 +113,13 @@ public class ChargingEnemy : MonsterPatrol
             yield return null;
         }
         rb.velocity = Vector2.zero;
+        
+       if (SoundManager.instance != null)
+        {
+            if (AudioClips1 != null && AudioClips1.Length > 0)
+                SoundManager.instance.PlayOneOf(AudioClips1);
+        }
+        
         if (anim != null) anim.ResetTrigger("Charge");
 
         // Stun animace
@@ -114,18 +138,4 @@ public class ChargingEnemy : MonsterPatrol
         isCharging = false;
     }
 
-    // @SFX:ChargeImpact
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (!isCharging) return;
-
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            audioSource?.PlayOneShot(playerImpactSFX);
-        }
-        else if (collision.gameObject.CompareTag("Wall"))
-        {
-            audioSource?.PlayOneShot(wallImpactSFX);
-        }
-    }
 }
