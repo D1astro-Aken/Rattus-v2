@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\Enemies\Projectiles.cs" />
     <Compile Include="Assets\Scripts\Core\CameraFollow.cs" />
     <Compile Include="Assets\Sprites\Custom\BackGrounds\Parallax.cs" />
+    <Compile Include="Assets\Scripts\Core\ScenePortal.cs" />
     <Compile Include="Assets\Scripts\Enemies\AmbushEnemy.cs" />
     <Compile Include="Assets\Scripts\Collectibles\HealthCollectibles.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttack.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Assets\Scripts\Player\LedgeHitbox.cs" />
     <Compile Include="Assets\Scripts\Enemies\ShooterEnemy.cs" />
     <Compile Include="Assets\Scripts\Player\Health\Health.cs" />
+    <Compile Include="Assets\Scripts\Core\MusicManager.cs" />
     <Compile Include="Assets\Scripts\Player\Uppercheck.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Enemies\EnemyDmg.cs" />

@@ -62,7 +62,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpBufferTime = 0.1f; // Buffer pro skok
     [SerializeField] private float maxJumpTime = 0.35f; // Maximální doba držení skoku
     [SerializeField] private float maxFallSpeed = 15f; // Maximální rychlost pádu
-    
+    [SerializeField] private AudioClip wallAttachSound;
+    [SerializeField] private AudioClip[] wallAttachSounds;
+
     // --- Acceleration/Deceleration ---
     [Header("Acceleration")]
     [SerializeField] private float groundAcceleration = 60f;
@@ -82,6 +84,26 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask wallLayer;
 
+    [Header("Collision Check Tuning")]
+    [SerializeField] private float groundCheckDistance = 0.1f;
+    [SerializeField] private Vector2 groundCheckSizeScale = new Vector2(0.9f, 0.1f);
+    [SerializeField] private float groundCheckOffsetY = 0.05f;
+    [SerializeField] private float wallCheckDistance = 0.1f;
+    [SerializeField] private Vector2 wallCheckSizeScale = new Vector2(0.8f, 0.9f);
+    [SerializeField] private Vector2 wallCheckOffset = Vector2.zero;
+    [SerializeField] private float sideNormalXThreshold = 0.8f;
+    [SerializeField] private float sideNormalYMax = 0.5f;
+    [SerializeField] private float slidingDownVyThreshold = -0.05f;
+
+    [Header("Wall Stability")]
+    [SerializeField] private float wallCoyoteTime = 0.08f; // drž onWall chvíli po ztrátě kontaktu
+    [SerializeField] private float wallDetachInputThreshold = 0.3f; // práh pro "odtlačování" od zdi
+    [SerializeField] private float wallReattachDelay = 0.12f; // po wall jumpu dočasně nechytej zdi
+
+    [Header("Wall Slide Reset")]
+    [SerializeField] private float wallSlideResetTime = 0.2f; // krátká lhůta bez slide po znovu-připojení
+    private float lastWallAttachTime = -999f;
+
     [Header("Sounds")]
     [SerializeField] private AudioClip jumpSound;
     [SerializeField] private AudioClip dashSound;
@@ -98,6 +120,12 @@ public class PlayerMovement : MonoBehaviour
 
     private float defaultGravityScale;
     private float lastFacingDirection = 1f;
+    private bool prevOnWall = false;
+
+    // Wall stability state
+    private float lastWallTouchTime = -999f;
+    private float lastWallNormalX = 0f;
+    private float lastWallJumpTime = -999f;
 
     private void Awake()
     {
@@ -137,7 +165,19 @@ public class PlayerMovement : MonoBehaviour
         {
             anim.SetBool("grounded", isGrounded());
         }
-        anim.SetBool("onwall", onWall());
+        bool onWallNow = onWall();
+        anim.SetBool("onwall", onWallNow);
+        if (onWallNow && !prevOnWall && !isGrabbingLedge)
+        {
+            if (SoundManager.instance != null)
+            {
+                if (wallAttachSounds != null && wallAttachSounds.Length > 0)
+                    SoundManager.instance.PlayOneOf(wallAttachSounds);
+                else if (wallAttachSound != null)
+                    SoundManager.instance.PlaySound(wallAttachSound);
+            }
+        }
+        prevOnWall = onWallNow;
 
         // Idle Sit logic: enter sit state after being idle on ground for a while
         bool noHorizontalInput = Mathf.Abs(horizontalInput) < 0.01f;
@@ -300,25 +340,35 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
             Dash();
 
-        // Dynamic gravity for better jump feel (with Apex Assist)
-        if (!isGrounded() && Mathf.Abs(body.velocity.y) < apexThreshold)
+        // Wall slide reset grace: krátce po reattachu neklouzej
+        if (onWall() && !isGrounded() && (Time.time - lastWallAttachTime) <= wallSlideResetTime)
         {
-            body.gravityScale = defaultGravityScale * apexGravityMultiplier;
-        }
-        else if (body.velocity.y < 0)
-        {
-            // Rychlejší pád
-            body.gravityScale = defaultGravityScale * fallGravityMultiplier;
-        }
-        else if (body.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
-        {
-            // Rychlejší pád při uvolnění tlačítka během vzletu
-            body.gravityScale = defaultGravityScale * lowJumpMultiplier;
+            body.gravityScale = 0f;
+            if (body.velocity.y < 0)
+                body.velocity = new Vector2(body.velocity.x, 0f);
         }
         else
         {
-            // Normální gravitace během vzletu při držení tlačítka
-            body.gravityScale = defaultGravityScale;
+            // Dynamic gravity for better jump feel (with Apex Assist)
+            if (!isGrounded() && Mathf.Abs(body.velocity.y) < apexThreshold)
+            {
+                body.gravityScale = defaultGravityScale * apexGravityMultiplier;
+            }
+            else if (body.velocity.y < 0)
+            {
+                // Rychlejší pád
+                body.gravityScale = defaultGravityScale * fallGravityMultiplier;
+            }
+            else if (body.velocity.y > 0 && !Input.GetKey(KeyCode.Space))
+            {
+                // Rychlejší pád při uvolnění tlačítka během vzletu
+                body.gravityScale = defaultGravityScale * lowJumpMultiplier;
+            }
+            else
+            {
+                // Normální gravitace během vzletu při držení tlačítka
+                body.gravityScale = defaultGravityScale;
+            }
         }
 
         // Omezení maximální rychlosti pádu
@@ -357,6 +407,12 @@ public class PlayerMovement : MonoBehaviour
             else
             {
                 coyoteCounter -= Time.deltaTime;
+            }
+
+            // Resetovat doublejump při kontaktu se zdí (wall slide)
+            if (onWall() && !isGrounded())
+            {
+                jumpCounter = extraJumps;
             }
         }
 
@@ -415,6 +471,9 @@ public class PlayerMovement : MonoBehaviour
         isJumping = true;
         jumpTimeCounter = maxJumpTime;
         jumpBufferCounter = 0;
+
+        // Prevent immediate reattach to any wall
+        lastWallJumpTime = Time.time;
         
         StartCoroutine(DisableInputTemporarily(0.2f));
         
@@ -637,59 +696,124 @@ public class PlayerMovement : MonoBehaviour
     // @SFX:GroundCheck
     public bool isGrounded()
     {
-        // Kombinuj groundLayer a wallLayer pro detekci podlahy
-        int combinedGroundLayer = groundLayer | wallLayer;
-        
-        RaycastHit2D raycastHit = Physics2D.BoxCast(
-            boxCollider.bounds.center,
-            boxCollider.bounds.size,
+        // Strict ground check: downward-only cast with normal check (serialized tuning)
+        float checkDistance = groundCheckDistance;
+        Vector2 feetCenter = new Vector2(boxCollider.bounds.center.x, boxCollider.bounds.min.y + groundCheckOffsetY);
+        Vector2 checkSize = new Vector2(
+            boxCollider.bounds.size.x * groundCheckSizeScale.x,
+            boxCollider.bounds.size.y * groundCheckSizeScale.y
+        );
+
+        RaycastHit2D groundHit = Physics2D.BoxCast(
+            feetCenter,
+            checkSize,
             0,
             Vector2.down,
-            0.1f,
-            combinedGroundLayer
+            checkDistance,
+            groundLayer
         );
-        return raycastHit.collider != null;
+
+        bool strictGround = groundHit.collider != null && groundHit.normal.y > 0.5f;
+        if (strictGround)
+            return true;
+
+        // Allow wall-under-player to count as ground only when not sliding down
+        bool slidingDown = body.velocity.y < slidingDownVyThreshold; // wallslide/fall heuristic
+        if (!slidingDown)
+        {
+            RaycastHit2D wallBelowHit = Physics2D.BoxCast(
+                feetCenter,
+                checkSize,
+                0,
+                Vector2.down,
+                checkDistance,
+                wallLayer
+            );
+            if (wallBelowHit.collider != null && wallBelowHit.normal.y > 0.5f)
+                return true;
+        }
+
+        return false;
     }
 
     // @SFX:WallCheck
     private bool onWall()
     {
-        // Použij menší box pro detekci pouze ze strany
-        Vector2 sideCheckSize = new Vector2(boxCollider.bounds.size.x * 0.8f, boxCollider.bounds.size.y * 0.6f);
-        
-        // Posun střed detekce trochu nahoru, aby se zabránilo detekci při stání na zemi
-        Vector2 sideCheckCenter = new Vector2(
-            boxCollider.bounds.center.x,
-            boxCollider.bounds.center.y + boxCollider.bounds.size.y * 0.1f
+        // Side wall check: horizontal cast with normal filter (serialized tuning)
+        Vector2 sideCheckSize = new Vector2(
+            boxCollider.bounds.size.x * wallCheckSizeScale.x,
+            boxCollider.bounds.size.y * wallCheckSizeScale.y
         );
-        
-        RaycastHit2D raycastHit = Physics2D.BoxCast(
+        Vector2 sideCheckCenter = boxCollider.bounds.center + (Vector3)wallCheckOffset;
+        Vector2 dir = new Vector2(Mathf.Sign(transform.localScale.x), 0f);
+
+        // Block reattach shortly after wall jump
+        if ((Time.time - lastWallJumpTime) <= wallReattachDelay)
+            return false;
+
+        RaycastHit2D wallHit = Physics2D.BoxCast(
             sideCheckCenter,
             sideCheckSize,
             0,
-            new Vector2(transform.localScale.x, 0),
-            0.1f,
+            dir,
+            wallCheckDistance,
             wallLayer
         );
-        
-        // Dodatečná kontrola - ujisti se, že hráč není na zemi
-        // Pokud je hráč na zemi a detekuje wall, pravděpodobně stojí na wall objektu
-        if (raycastHit.collider != null && isGrounded())
+
+        bool hasContact = wallHit.collider != null;
+
+        // Ensure this is a side contact (not a floor/ledge): horizontal normal dominant
+        bool sideSurface = hasContact && Mathf.Abs(wallHit.normal.x) > sideNormalXThreshold && Mathf.Abs(wallHit.normal.y) < sideNormalYMax;
+
+        // Ignore wall if strictly grounded below (use serialized ground check tuning)
+        float checkDistance = groundCheckDistance;
+        Vector2 feetCenter = new Vector2(boxCollider.bounds.center.x, boxCollider.bounds.min.y + groundCheckOffsetY);
+        Vector2 checkSize = new Vector2(
+            boxCollider.bounds.size.x * groundCheckSizeScale.x,
+            boxCollider.bounds.size.y * groundCheckSizeScale.y
+        );
+        RaycastHit2D groundHit = Physics2D.BoxCast(
+            feetCenter,
+            checkSize,
+            0,
+            Vector2.down,
+            checkDistance,
+            groundLayer
+        );
+        bool groundedStrict = groundHit.collider != null && groundHit.normal.y > 0.5f;
+
+        // Determine if player is pushing away from wall (relative to wall side)
+        // Use current hit normal if present, otherwise last known wall normal during coyote
+        float wallNormalX = sideSurface ? wallHit.normal.x : lastWallNormalX;
+        bool hasMoveInput = Mathf.Abs(horizontalInput) > 0.01f;
+        bool pushingAway = hasMoveInput && (horizontalInput * wallNormalX) > wallDetachInputThreshold;
+        bool slidingDown = body.velocity.y < slidingDownVyThreshold;
+
+        // Contact handling: drop onWall immediately when pushing away (even with contact)
+        if (sideSurface && !groundedStrict)
         {
-            // Zkontroluj, zda je wall skutečně ze strany a ne pod hráčem
-            Vector2 rayDirection = new Vector2(transform.localScale.x, 0);
-            RaycastHit2D sideRaycast = Physics2D.Raycast(
-                new Vector2(boxCollider.bounds.center.x, boxCollider.bounds.center.y),
-                rayDirection,
-                boxCollider.bounds.size.x * 0.6f,
-                wallLayer
-            );
-            
-            // Pokud side raycast nedetekuje wall, pravděpodobně stojíme na wall objektu
-            return sideRaycast.collider != null;
+            if (pushingAway)
+            {
+                // cancel coyote when actively detaching
+                lastWallTouchTime = -999f;
+                lastWallNormalX = wallHit.normal.x;
+                return false;
+            }
+            lastWallTouchTime = Time.time;
+            lastWallNormalX = wallHit.normal.x;
+            // záznam času reattachu pro reset slide
+            lastWallAttachTime = Time.time;
+            return true;
         }
-        
-        return raycastHit.collider != null;
+
+        // Grace period: keep onWall shortly after losing contact while sliding down
+        // BUT cancel immediately if player is actively pushing away from the last wall side
+        if (!groundedStrict && slidingDown && !pushingAway && (Time.time - lastWallTouchTime) <= wallCoyoteTime)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // @SFX:AttackReady
@@ -702,21 +826,64 @@ public class PlayerMovement : MonoBehaviour
     // @SFX:DebugGizmos
     private void OnDrawGizmosSelected()
     {
+        // Bezpečná reference na box collider i v editoru
+        var bc = boxCollider != null ? boxCollider : GetComponent<BoxCollider2D>();
+        if (bc == null) return;
+
+        // --- GROUND CHECK GIZMO --- odpovídá isGrounded() s tunable parametry
+        Vector2 feetCenter = new Vector2(bc.bounds.center.x, bc.bounds.min.y + groundCheckOffsetY);
+        Vector2 groundCheckSize = new Vector2(
+            bc.bounds.size.x * groundCheckSizeScale.x,
+            bc.bounds.size.y * groundCheckSizeScale.y
+        );
+
+        // start box
+        Gizmos.color = new Color(0f, 1f, 0f, 0.25f);
+        Gizmos.DrawCube(feetCenter, groundCheckSize);
+        Gizmos.color = new Color(0f, 0.8f, 0f, 1f);
+        Gizmos.DrawWireCube(feetCenter, groundCheckSize);
+
+        // end box + směr
+        Vector2 feetEnd = feetCenter + Vector2.down * groundCheckDistance;
+        Gizmos.color = new Color(0f, 0.6f, 0f, 0.2f);
+        Gizmos.DrawCube(feetEnd, groundCheckSize);
+        Gizmos.color = new Color(0f, 0.6f, 0f, 1f);
+        Gizmos.DrawWireCube(feetEnd, groundCheckSize);
+        Gizmos.DrawLine(feetCenter, feetEnd);
+
+        // --- WALL CHECK GIZMO --- odpovídá onWall() s tunable parametry
+        Vector2 wallCheckSize = new Vector2(
+            bc.bounds.size.x * wallCheckSizeScale.x,
+            bc.bounds.size.y * wallCheckSizeScale.y
+        );
+        Vector2 wallCheckCenter = bc.bounds.center + (Vector3)wallCheckOffset;
+        Vector2 dir = new Vector2(Mathf.Sign(transform.localScale.x), 0f);
+
+        // start box
+        Gizmos.color = new Color(0f, 1f, 1f, 0.25f);
+        Gizmos.DrawCube(wallCheckCenter, wallCheckSize);
+        Gizmos.color = new Color(0f, 1f, 1f, 1f);
+        Gizmos.DrawWireCube(wallCheckCenter, wallCheckSize);
+
+        // end box + směr
+        Vector2 wallEnd = wallCheckCenter + dir * wallCheckDistance;
+        Gizmos.color = new Color(0f, 0.7f, 1f, 0.2f);
+        Gizmos.DrawCube(wallEnd, wallCheckSize);
+        Gizmos.color = new Color(0f, 0.7f, 1f, 1f);
+        Gizmos.DrawWireCube(wallEnd, wallCheckSize);
+        Gizmos.DrawLine(wallCheckCenter, wallEnd);
+
+        // --- LEDGE SNAP GIZMO --- (ponecháno)
         if (ledgeHitbox == null) return;
 
         // poslední známá pozice ledge
         Vector2 basePos = ledgeHitbox.ledgePosition;
-
-        // směr podle toho, kam se hráč dívá
         float direction = Mathf.Sign(transform.localScale.x) * -1;
-
-        // kde by se měl hráč snapnout
         Vector2 snapPosition = new Vector2(
             basePos.x + direction * ledgeSnapHorizontalOffset,
             basePos.y - ledgeHangOffsetY
         );
 
-        // vykresli gizmo
         Gizmos.color = Color.cyan;
         Gizmos.DrawSphere(snapPosition, 0.1f);
 
