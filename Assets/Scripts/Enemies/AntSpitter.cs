@@ -24,6 +24,9 @@ public class AntSpitter : MonsterPatrol
     public float runAwaySpeed = 4f;
     public float runAwayDistance = 5f;
     
+    [Header("Recharge Settings")]
+    public float rechargeDuration = 1f; // délka "reset" animace (dobití střel)
+    
     [Header("Burst Settings")]
     public bool useBurstFire = true;
     public int burstCount = 3;
@@ -53,13 +56,20 @@ public class AntSpitter : MonsterPatrol
     
     // Shooting timer mechanics
     private bool isSpittingLocked = false;
-    private float spittingLockDuration = 1f; // Duration to lock movement during spitting
+    private float spittingLockDuration = 1.5f; // Duration to lock movement during spitting
     private float spittingLockStartTime;
     
     // Run away mechanic variables
     private bool isRunningAway = false;
     private float runAwayStartTime;
     private Vector2 runAwayDirection;
+    
+    private bool isRecharging = false; // probíhá reset/recharge po běhu
+    private Vector3 rechargeLockedPosition; // pevná pozice během recharge
+    private bool rechargeFreezingApplied = false;
+    private RigidbodyType2D originalBodyType;
+    private float originalGravityScale;
+    private bool originalApplyRootMotion;
 
     // @SFX:SpitterInit
     protected override void Start()
@@ -99,6 +109,17 @@ public class AntSpitter : MonsterPatrol
         {
             HandleRunAway();
             return; // ABSOLUTELY no other logic during run away
+        }
+
+        // Handle recharge state: během resetu se nic jiného nedělá
+        if (isRecharging)
+        {
+            // Tvrdě uzamkni pozici kvůli root motionu nebo jiným transform změnám
+            transform.position = rechargeLockedPosition;
+            if (rb != null)
+                rb.velocity = Vector2.zero;
+            UpdateAnimationStates();
+            return;
         }
 
         // Handle spitting lock timer - NEVER check player range during this time
@@ -452,10 +473,9 @@ public class AntSpitter : MonsterPatrol
         {
             Debug.Log("[AntSpitter] HandleRunAway - Run away duration ended");
             isRunningAway = false;
-            
-            // RE-ENABLE shooting capability after runaway completes
-            canShoot = true;
-            Debug.Log("[AntSpitter] canShoot set to TRUE - runaway completed");
+
+            // Po skončení běhu spusť recharge (reset animaci), teprve poté povol střelbu
+            StartRecharge();
             return;
         }
         
@@ -478,9 +498,23 @@ public class AntSpitter : MonsterPatrol
         // Set animation parameters based on current state
         if (HasAnimatorParameter("isSpitting"))
             anim.SetBool("isSpitting", isSpitting || isSpittingLocked); // Keep spitting animation during lock
+
+        // Also support animator setups that use "isShooting" or "is shooting" instead of "isSpitting"
+        // This ensures the shooting flag activates during both active spit and lock window
+        if (HasAnimatorParameter("isShooting"))
+        {
+            anim.SetBool("isShooting", isSpitting || isSpittingLocked);
+        }
+        if (HasAnimatorParameter("is shooting"))
+        {
+            anim.SetBool("is shooting", isSpitting || isSpittingLocked);
+        }
             
         if (HasAnimatorParameter("isRunning"))
             anim.SetBool("isRunning", isRunningAway);
+
+        if (HasAnimatorParameter("isReset"))
+            anim.SetBool("isReset", isRecharging); // aktivuj reset animaci během dobíjení
             
         // Improved walking detection
         bool isMoving = false;
@@ -512,10 +546,10 @@ public class AntSpitter : MonsterPatrol
         }
             
         if (HasAnimatorParameter("isWalking"))
-            anim.SetBool("isWalking", !isSpitting && !isSpittingLocked && !isRunningAway && isMoving);
+            anim.SetBool("isWalking", !isSpitting && !isSpittingLocked && !isRunningAway && !isRecharging && isMoving);
             
         if (HasAnimatorParameter("isIdle"))
-            anim.SetBool("isIdle", !isSpitting && !isSpittingLocked && !isRunningAway && !isMoving);
+            anim.SetBool("isIdle", !isSpitting && !isSpittingLocked && !isRunningAway && !isRecharging && !isMoving);
     }
 
     // Pomocná metoda pro kontrolu existence animator parametru
@@ -585,5 +619,65 @@ public class AntSpitter : MonsterPatrol
         int idx = Random.Range(0, ambientClips.Length);
         AudioClip clip = ambientClips[idx];
         ambientSource.PlayOneShot(clip, ambientVolume);
+    }
+
+    // Spusť dobíjení po skončení běhu
+    private void StartRecharge()
+    {
+        if (isRecharging) return;
+        Debug.Log($"[AntSpitter] StartRecharge - Duration: {rechargeDuration}s");
+        isRecharging = true;
+        // Zamkni aktuální pozici a zmraz fyziku + root motion
+        rechargeLockedPosition = transform.position;
+        ApplyRechargeFreeze();
+        if (anim != null)
+        {
+            originalApplyRootMotion = anim.applyRootMotion;
+            anim.applyRootMotion = false;
+        }
+        StartCoroutine(RechargeRoutine());
+    }
+
+    private IEnumerator RechargeRoutine()
+    {
+        // Během recharge drž jen animace, logiku blokuje check v Update()
+        yield return new WaitForSeconds(rechargeDuration);
+
+        // Konec resetu: povol znovu střelbu a vypni reset
+        ReleaseRechargeFreeze();
+        if (anim != null)
+        {
+            anim.applyRootMotion = originalApplyRootMotion;
+        }
+        canShoot = true;
+        isRecharging = false;
+        Debug.Log("[AntSpitter] Recharge completed - canShoot TRUE");
+    }
+
+    // Ensure enemy cannot move during recharge
+    private void ApplyRechargeFreeze()
+    {
+        if (rechargeFreezingApplied) return;
+        if (rb != null)
+        {
+            originalBodyType = rb.bodyType;
+            originalGravityScale = rb.gravityScale;
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0f;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.angularVelocity = 0f;
+        }
+        rechargeFreezingApplied = true;
+    }
+
+    private void ReleaseRechargeFreeze()
+    {
+        if (!rechargeFreezingApplied) return;
+        if (rb != null)
+        {
+            rb.bodyType = originalBodyType;
+            rb.gravityScale = originalGravityScale;
+        }
+        rechargeFreezingApplied = false;
     }
 }

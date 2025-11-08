@@ -14,8 +14,8 @@ public class ChargingEnemy : MonsterPatrol
     public float stunDuration = 1f;
 
     [Header("Sounds")]
-        [SerializeField] private AudioClip[] AudioClips1;
-    
+    [SerializeField] private AudioClip[] AudioClips1;
+
     [Header("Alert Sound")]
     [SerializeField] private AudioSource ambientSource;
     [SerializeField] private AudioClip alertClip;
@@ -52,9 +52,12 @@ public class ChargingEnemy : MonsterPatrol
             return;
 
         if (playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) < triggerDistance)
-        { if (!hasAlertedPlayer)
+        {
+            // Alert zvuk: přehraj jednou když nepřítel poprvé spatří hráče v dosahu
+            if (!hasAlertedPlayer)
             {
                 hasAlertedPlayer = true;
+
                 if (alertClip != null)
                 {
                     if (ambientSource == null)
@@ -66,10 +69,13 @@ public class ChargingEnemy : MonsterPatrol
                         Debug.LogWarning("[ChargingEnemy] No AudioSource available to play alert clip!");
                 }
             }
+
             TryCharge();
         }
         else
-        { hasAlertedPlayer = false;
+        {
+            // Mimo dosah hráče: resetuj alert flag, aby se mohl znovu přehrát
+            hasAlertedPlayer = false;
             base.Update(); // jinak patrol
         }
     }
@@ -82,7 +88,7 @@ public class ChargingEnemy : MonsterPatrol
     }
 
     // @SFX:ChargeSequence
-    private IEnumerator ChargeSequence()
+    public IEnumerator ChargeSequence()
     {
         isCharging = true;
         canCharge = false;
@@ -113,13 +119,14 @@ public class ChargingEnemy : MonsterPatrol
             yield return null;
         }
         rb.velocity = Vector2.zero;
-        
-       if (SoundManager.instance != null)
+
+        // Zvuk po dokončení charge
+        if (SoundManager.instance != null)
         {
             if (AudioClips1 != null && AudioClips1.Length > 0)
                 SoundManager.instance.PlayOneOf(AudioClips1);
         }
-        
+
         if (anim != null) anim.ResetTrigger("Charge");
 
         // Stun animace
@@ -137,5 +144,4 @@ public class ChargingEnemy : MonsterPatrol
         canCharge = true;
         isCharging = false;
     }
-
 }
