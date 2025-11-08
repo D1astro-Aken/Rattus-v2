@@ -1,5 +1,17 @@
 fileFormatVersion: 2
-guid: 558dabee47bdd684fa7efe0c335493f2
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+guid: 1a4529439215c3240aea8cfd487eb050
+=======
+guid: 1910f36aeca9aeb4986aa4a56aaeee84
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:Assets/Sprites/Custom/Entities/ChargerBug/Sounds/audio cue charger.wav.meta
+guid: bd4b8ae50d6148441907b4163ea225d8
+========
+guid: 1910f36aeca9aeb4986aa4a56aaeee84
+>>>>>>>> Stashed changes:Assets/ambiance cavern1A.mp3.meta
+>>>>>>> Stashed changes
 AudioImporter:
   externalObjects: {}
   serializedVersion: 7
