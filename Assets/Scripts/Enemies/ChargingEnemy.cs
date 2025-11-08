@@ -13,6 +13,12 @@ public class ChargingEnemy : MonsterPatrol
     public float chargeCooldown = 3f;
     public float stunDuration = 1f;
 
+    [Header("Alert Sound")]
+    [SerializeField] private AudioSource ambientSource;
+    [SerializeField] private AudioClip alertClip;
+    [SerializeField] private float alertVolume = 1f;
+    private bool hasAlertedPlayer = false;
+
     private bool isCharging = false;
     private bool canCharge = true;
     private bool isStunned = false;
@@ -44,10 +50,27 @@ protected override void Update()
 
         if (playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) < triggerDistance)
         {
+            // Alert zvuk: přehraj jednou když nepřítel poprvé spatří hráče v dosahu
+            if (!hasAlertedPlayer)
+            {
+                hasAlertedPlayer = true;
+                if (alertClip != null)
+                {
+                    if (ambientSource == null)
+                        ambientSource = GetComponent<AudioSource>();
+
+                    if (ambientSource != null)
+                        ambientSource.PlayOneShot(alertClip, alertVolume);
+                    else
+                        Debug.LogWarning("[ChargingEnemy] No AudioSource available to play alert clip!");
+                }
+            }
             TryCharge();
         }
         else
         {
+            // Mimo dosah hráče: resetuj alert flag, aby se mohl znovu přehrát
+            hasAlertedPlayer = false;
             base.Update(); // jinak patrol
         }
     }

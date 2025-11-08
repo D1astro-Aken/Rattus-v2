@@ -122,14 +122,10 @@ private void OnTriggerEnter2D(Collider2D collision)
             isPositionLocked = true;
 
         if (SoundManager.instance != null)
-         {
-             if (AudioClips1 != null && AudioClips1.Length > 0)
-                 SoundManager.instance.PlayOneOf(AudioClips1);
-             else if (AudioClip1 != null)
-                 SoundManager.instance.PlaySound(AudioClip1);
-         }
-            
-            
+        {
+            if (AudioClips1 != null && AudioClips1.Length > 0)
+                SoundManager.instance.PlayOneOf(AudioClips1);
+        }
             
             
             // Play hit animation

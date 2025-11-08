@@ -163,6 +163,10 @@ PrefabInstance:
       value: 0.09
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: wallSlideResetTime
+      value: -0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: groundCheckSizeScale.x
       value: 0.72
       objectReference: {fileID: 0}
@@ -1008,6 +1012,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8300000, guid: 9c37287f7fb41fd4d8cbf89fc5f0f151, type: 3}
     - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
+      propertyPath: burstDelay
+      value: 1.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: alertVolume
       value: 0.5
       objectReference: {fileID: 0}
@@ -1019,6 +1027,10 @@ PrefabInstance:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 734956}
+    - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
+      propertyPath: rechargeDuration
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: projectileSFXVolume
       value: 0.5
