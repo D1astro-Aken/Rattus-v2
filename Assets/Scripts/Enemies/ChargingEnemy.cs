@@ -15,6 +15,7 @@ public class ChargingEnemy : MonsterPatrol
 
     [Header("Sounds")]
     [SerializeField] private AudioClip[] AudioClips1;
+    [SerializeField] private AudioClip[] stunClips;
 
     [Header("Alert Sound")]
     [SerializeField] private AudioSource ambientSource;
@@ -132,6 +133,14 @@ public class ChargingEnemy : MonsterPatrol
         // Stun animace
         isStunned = true;
         if (anim != null) anim.SetTrigger("Stun");
+
+        // Zvuk pro stun
+        if (SoundManager.instance != null)
+        {
+            if (stunClips != null && stunClips.Length > 0)
+                SoundManager.instance.PlayOneOf(stunClips);
+        }
+
         yield return new WaitForSeconds(stunDuration);
         if (anim != null) anim.ResetTrigger("Stun");
         isStunned = false;
