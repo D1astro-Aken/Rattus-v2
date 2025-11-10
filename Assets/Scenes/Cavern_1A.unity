@@ -137,7 +137,7 @@ PrefabInstance:
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: dashSound
       value: 
-      objectReference: {fileID: 8300000, guid: 023e025e27659c44390e8367c4acf3aa, type: 3}
+      objectReference: {fileID: 8300000, guid: bc55607f4fb3e6a4e835ca1d81a65363, type: 3}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: jumpSound
       value: 
@@ -1018,14 +1018,14 @@ PrefabInstance:
     - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: alertClip
       value: 
-      objectReference: {fileID: 8300000, guid: 9c37287f7fb41fd4d8cbf89fc5f0f151, type: 3}
+      objectReference: {fileID: 8300000, guid: 3930ddade28b369409e69f48e85fd4ee, type: 3}
     - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: burstDelay
       value: 1.03
       objectReference: {fileID: 0}
     - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: alertVolume
-      value: 0.5
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 9195546882146233604, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: projectileSFX
@@ -1324,7 +1324,11 @@ PrefabInstance:
     - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
       propertyPath: alertClip
       value: 
-      objectReference: {fileID: 8300000, guid: bd4b8ae50d6148441907b4163ea225d8, type: 3}
+      objectReference: {fileID: 8300000, guid: a6edea4bd686f464eb5f77faab22afa4, type: 3}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: alertVolume
+      value: 1.5
+      objectReference: {fileID: 0}
     - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
       propertyPath: ambientSource
       value: 
@@ -1338,9 +1342,17 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 734956}
     - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: stunClips.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
       propertyPath: AudioClips1.Array.size
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: stunClips.Array.data[0]
+      value: 
+      objectReference: {fileID: 8300000, guid: e7d224426d296c64da4e87607f4c4525, type: 3}
     - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
       propertyPath: AudioClips1.Array.data[0]
       value: 
@@ -2597,7 +2609,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 1a4529439215c3240aea8cfd487eb050, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.297
+  m_Volume: 0.203
   m_Pitch: 1
   Loop: 1
   Mute: 0
