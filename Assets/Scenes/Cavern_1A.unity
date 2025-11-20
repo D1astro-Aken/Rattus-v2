@@ -135,6 +135,10 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: sitSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 39f41ab721ba97149b78a69ec0c512a8, type: 3}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: dashSound
       value: 
       objectReference: {fileID: 8300000, guid: bc55607f4fb3e6a4e835ca1d81a65363, type: 3}
@@ -142,6 +146,10 @@ PrefabInstance:
       propertyPath: jumpSound
       value: 
       objectReference: {fileID: 8300000, guid: 3d4fbfc42fbbbf742a0d2f49eff417c1, type: 3}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: ledgeSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 7c5632e62cb68bd45a8e24611f089137, type: 3}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: stepHeight
       value: 0.2
@@ -151,9 +159,21 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 734955}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: doubleJumpSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 45928d6940f3a3c49a6321665fbb9131, type: 3}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: wallAttachSound
       value: 
       objectReference: {fileID: 8300000, guid: f69fdee92573fcd47a504334920d51af, type: 3}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: fallLandingSound
+      value: 
+      objectReference: {fileID: 8300000, guid: ff8942fdd1d4e4247b9a30f58e72be5a, type: 3}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: ledgeAudioSource
+      value: 
+      objectReference: {fileID: 1947139612}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: wallJumpCooldown
       value: 0.5
@@ -161,6 +181,10 @@ PrefabInstance:
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: stepCheckDistance
       value: 0.18
+      objectReference: {fileID: 0}
+    - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: fallSoundThreshold
+      value: 0.7
       objectReference: {fileID: 0}
     - target: {fileID: 296819787565368976, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: groundCheckOffsetY
@@ -202,6 +226,10 @@ PrefabInstance:
       propertyPath: m_Pitch
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4451244668925898683, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: MinDistance
+      value: 0.7440996
+      objectReference: {fileID: 0}
     - target: {fileID: 5908675830979253727, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.19
@@ -224,11 +252,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -18.11
+      value: -17.92
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.12
+      value: -3.99
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -970,6 +998,10 @@ PrefabInstance:
     - target: {fileID: 1601535027019928748, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: m_Pitch
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1601535027019928748, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
+      propertyPath: m_Volume
+      value: 0.246
       objectReference: {fileID: 0}
     - target: {fileID: 3013276354371822749, guid: d6109a067b84fb749af7dbc205c1a740, type: 3}
       propertyPath: m_Name
@@ -18041,7 +18073,7 @@ Tilemap:
     second:
       serializedVersion: 2
       m_TileIndex: 0
-      m_TileSpriteIndex: 1
+      m_TileSpriteIndex: 33
       m_TileMatrixIndex: 0
       m_TileColorIndex: 0
       m_TileObjectToInstantiateIndex: 65535
@@ -38838,8 +38870,8 @@ Tilemap:
   m_TileSpriteArray:
   - m_RefCount: 0
     m_Data: {fileID: 0}
-  - m_RefCount: 1
-    m_Data: {fileID: 21300000, guid: bd60f36518565814e85192c37241165a, type: 3}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   - m_RefCount: 6
     m_Data: {fileID: 21300000, guid: 2e804a421db5047478797001af930a10, type: 3}
   - m_RefCount: 6
@@ -38902,8 +38934,8 @@ Tilemap:
     m_Data: {fileID: 21300000, guid: 3fafde17af940bc4bb94f46633759edd, type: 3}
   - m_RefCount: 19
     m_Data: {fileID: 21300000, guid: e212ee248d17ab2409603f26ea98bbde, type: 3}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
+  - m_RefCount: 1
+    m_Data: {fileID: 21300000, guid: bd60f36518565814e85192c37241165a, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: 21300000, guid: c3381bd32a0238641b91354210820e51, type: 3}
   - m_RefCount: 1
@@ -40467,6 +40499,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4f21f5fc40a25f145b708ed6fa21ac28, type: 3}
+--- !u!82 &1947139612 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 4451244668925898683, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+  m_PrefabInstance: {fileID: 734954}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1976396002 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2424752425728735984, guid: f3f57b3301990064aac16fd5d3486ade, type: 3}
