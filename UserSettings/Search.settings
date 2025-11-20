@@ -9,7 +9,7 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"last_search.66F56946" = ""
+	"last_search.66F56946" = "animator"
 	"OpenInspectorPreview.66F56946" = "0"
 	"currentGroup.66F56946" = "store"
 }
@@ -75,7 +75,7 @@ hideTabs = false
 expandedQueries = [-1765347274]
 queryBuilder = false
 ignoredProperties = "id;name;classname;imagecontentshash"
-helperWidgetCurrentArea = "store:"
+helperWidgetCurrentArea = "all"
 disabledIndexers = ""
 minIndexVariations = 2
 findProviderIndexHelper = true

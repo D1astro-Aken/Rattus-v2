@@ -107,6 +107,15 @@ public class PlayerMovement : MonoBehaviour
     [Header("Sounds")]
     [SerializeField] private AudioClip jumpSound;
     [SerializeField] private AudioClip dashSound;
+    [SerializeField] private AudioClip ledgeSound;
+    [SerializeField] private AudioSource ledgeAudioSource;
+
+    //tohle jsem pridal ja kdyby to bylo blby tka to smaz - serialized field pro zvuk dopadu a prah (3s) pro prehrani
+    [SerializeField] private AudioClip fallLandingSound; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
+    [SerializeField] private float fallSoundThreshold = 3f; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
+
+    //tohle jsem pridal ja kdyby to bylo blby tka to smaz - serialized field pro sit zvuk (kdyz sedne)
+    [SerializeField] private AudioClip sitSound; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
 
     [Header("Idle Sit")]
     [SerializeField] private float idleSitDelay = 5f; // Time before entering sit animation
@@ -127,12 +136,22 @@ public class PlayerMovement : MonoBehaviour
     private float lastWallNormalX = 0f;
     private float lastWallJumpTime = -999f;
 
+    //tohle jsem pridal ja kdyby to bylo blby tka to smaz - interní timer pro sledování pádu
+    private float fallTimer = 0f; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
+
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
         defaultGravityScale = body.gravityScale;
+
+        //tohle jsem pridal ja kdyby to bylo blby tka to smaz - fallback: vytvoř AudioSource pokud není přiřazený (usnadní používání)
+        if (ledgeAudioSource == null)
+        {
+            ledgeAudioSource = gameObject.AddComponent<AudioSource>();
+            ledgeAudioSource.playOnAwake = false;
+        }
     }
 
     // @SFX:MovementUpdate
@@ -188,18 +207,56 @@ public class PlayerMovement : MonoBehaviour
         if (canSit && noHorizontalInput && veryStill)
         {
             idleTimer += Time.deltaTime;
-            if (idleTimer >= idleSitDelay)
+            if (idleTimer >= idleSitDelay && !isSitting)
             {
                 isSitting = true;
+
+                //tohle jsem pridal ja kdyby to bylo blby tka to smaz - přehraj sit sound při vstupu do sedu
+                if (ledgeAudioSource != null && sitSound != null)
+                {
+                    ledgeAudioSource.PlayOneShot(sitSound);
+                }
             }
         }
         else
         {
             idleTimer = 0f;
-            isSitting = false;
+            if (isSitting) // leave sit state
+                isSitting = false;
         }
 
         anim.SetBool("sit", isSitting);
+
+        //tohle jsem pridal ja kdyby to bylo blby tka to smaz
+        // sledování délky pádu; pokud hráč byl ve stavu pádu (vert. rychlost dolů) a strávil v tom stavu >= fallSoundThreshold sekund,
+        // tak se při dopadu přehraje fallLandingSound.
+        if (!isGrabbingLedge && !isClimbingLedge)
+        {
+            // považujeme za "pád" pouze pokud máme zápornou vertikální rychlost (padáme dolů)
+            if (!isGrounded() && body.velocity.y < -0.1f)
+            {
+                fallTimer += Time.deltaTime;
+            }
+            else if (isGrounded() && fallTimer > 0f)
+            {
+                if (fallTimer >= fallSoundThreshold)
+                {
+                    if (ledgeAudioSource != null && fallLandingSound != null)
+                    {
+                        ledgeAudioSource.PlayOneShot(fallLandingSound);
+                    }
+                }
+                // reset timer po dopadu bez ohledu na to, zda jsme zvuk přehráli
+                fallTimer = 0f;
+            }
+
+            // pokud jsme ve vzduchu, ale nepadáme (např. stoupáme), tak resetujeme timer
+            if (!isGrounded() && body.velocity.y >= -0.1f)
+            {
+                fallTimer = 0f;
+            }
+        }
+        //tohle jsem pridal ja kdyby to bylo blby tka to smaz
 
         // --- LEDGE GRAB CHECK ---
         // Debug.Log($"Ledge Check - Grounded: {isGrounded()}, OnWall: {onWall()}, IsGrabbing: {isGrabbingLedge}, CanGrab: {ledgeHitbox.canGrab}, HasSnapped: {hasSnapped}, Cooldown: {ledgeGrabCooldownTimer}");
@@ -529,12 +586,18 @@ public class PlayerMovement : MonoBehaviour
 
     // --- LEDGE FUNCTIONS ---
     // @SFX:LedgeGrab
-    private void StartLedgeGrab(Vector2 pos)
+   private void StartLedgeGrab(Vector2 pos)
+{
+    isGrabbingLedge = true;
+    ledgePos = pos;
+    hasSnapped = false;
+
+    // přehrání zvuku ledge grab
+    if (ledgeAudioSource != null && ledgeSound != null)
     {
-        isGrabbingLedge = true;
-        ledgePos = pos;
-        hasSnapped = false;
+        ledgeAudioSource.PlayOneShot(ledgeSound);
     }
+}
 
     // @SFX:LedgeClimb
     private IEnumerator LedgeClimb()
