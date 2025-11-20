@@ -28,7 +28,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Dash Mechanics")]
     [SerializeField] private float dashDistance;
     [SerializeField] private float dashCooldown;
-     [SerializeField] private float dashDuration = 0.2f; // Délka dashu (air dash tuning)
+    [SerializeField] private float dashDuration = 0.2f; // Délka dashu (air dash tuning)
     private float dashCooldownTimer;
     private bool isDashing;
     private bool hasAirDashed; // true, pokud už byl dash použit ve vzduchu
@@ -203,7 +203,7 @@ public class PlayerMovement : MonoBehaviour
 
         // --- LEDGE GRAB CHECK ---
         // Debug.Log($"Ledge Check - Grounded: {isGrounded()}, OnWall: {onWall()}, IsGrabbing: {isGrabbingLedge}, CanGrab: {ledgeHitbox.canGrab}, HasSnapped: {hasSnapped}, Cooldown: {ledgeGrabCooldownTimer}");
-        
+
         if (!isGrounded() && !onWall() && !isGrabbingLedge && ledgeHitbox.canGrab &&
             !hasSnapped && ledgeGrabCooldownTimer <= 0)
         {
@@ -215,7 +215,7 @@ public class PlayerMovement : MonoBehaviour
         {
             body.velocity = Vector2.zero;
             body.gravityScale = 0;
-            
+
             // Don't set ledgeGrab to true during climb animation
             if (!isClimbingLedge)
             {
@@ -226,14 +226,14 @@ public class PlayerMovement : MonoBehaviour
             if (!hasSnapped)
             {
                 float direction = Mathf.Sign(lastFacingDirection);
-                
+
                 // Use adjustable offsets for fine-tuning the ledge position
                 // This ensures the character is always at the exact same position relative to the ledge
                 Vector2 snapPosition = new Vector2(
-                    ledgeHitbox.ledgePosition.x - direction * ledgeHorizontalOffset, 
+                    ledgeHitbox.ledgePosition.x - direction * ledgeHorizontalOffset,
                     ledgeHitbox.ledgePosition.y - ledgeVerticalOffset
                 );
-                
+
                 // Vylepšená safety kontrola pro zabránění clipování
                 // Kontrola více pozic kolem snap pozice
                 bool positionSafe = true;
@@ -244,7 +244,7 @@ public class PlayerMovement : MonoBehaviour
                     snapPosition + Vector2.up * 0.1f,
                     snapPosition + Vector2.down * 0.1f
                 };
-                
+
                 foreach (Vector2 checkPos in checkPositions)
                 {
                     // Kontrola proti ground i wall objektům
@@ -255,7 +255,7 @@ public class PlayerMovement : MonoBehaviour
                         break;
                     }
                 }
-                
+
                 // Pokud pozice není bezpečná, najdi nejbližší bezpečnou pozici
                 if (!positionSafe)
                 {
@@ -265,7 +265,7 @@ public class PlayerMovement : MonoBehaviour
                             snapPosition.x - direction * offset,
                             snapPosition.y
                         );
-                        
+
                         Collider2D testCollider = Physics2D.OverlapCircle(safePos, 0.08f, groundLayer | wallLayer);
                         if (testCollider == null)
                         {
@@ -274,7 +274,7 @@ public class PlayerMovement : MonoBehaviour
                         }
                     }
                 }
-                
+
                 transform.position = snapPosition;
                 hasSnapped = true;
             }
@@ -383,7 +383,7 @@ public class PlayerMovement : MonoBehaviour
             float currentVelX = body.velocity.x;
             float targetSpeed = horizontalInput * speed;
             bool hasInput = Mathf.Abs(horizontalInput) > 0.01f;
-            float accelRate = isGrounded() 
+            float accelRate = isGrounded()
                 ? (hasInput ? groundAcceleration : groundDeceleration)
                 : (hasInput ? airAcceleration : airDeceleration);
             float newVelX = Mathf.MoveTowards(currentVelX, targetSpeed, accelRate * Time.deltaTime);
@@ -466,7 +466,7 @@ public class PlayerMovement : MonoBehaviour
         float wallDirection = -Mathf.Sign(transform.localScale.x);
         body.velocity = new Vector2(wallDirection * wallJumpX, wallJumpY);
         wallJumpCooldownTimer = wallJumpCooldown;
-        
+
         // Reset jump variables for wall jump
         isJumping = true;
         jumpTimeCounter = maxJumpTime;
@@ -474,9 +474,9 @@ public class PlayerMovement : MonoBehaviour
 
         // Prevent immediate reattach to any wall
         lastWallJumpTime = Time.time;
-        
+
         StartCoroutine(DisableInputTemporarily(0.2f));
-        
+
         // Add null check for animator
         if (anim != null)
             anim.SetTrigger("jump");
@@ -497,27 +497,27 @@ public class PlayerMovement : MonoBehaviour
         if (!isGrounded() && hasAirDashed)
             return;
 
-         if (SoundManager.instance != null && dashSound != null)
-             SoundManager.instance.PlaySound(dashSound);
-         isDashing = true;
-         dashCooldownTimer = dashCooldown;
-         anim.SetTrigger("dash");
- 
-         Vector2 dashDirection = new Vector2(transform.localScale.x, 0).normalized;
- 
-         // Potlačit gravitaci při air dash
-         if (!isGrounded())
-             body.gravityScale = 0f;
- 
-         // Pokud jsme ve vzduchu, označ, že dash byl použit v této vzdušné fázi
-         if (!isGrounded())
-             hasAirDashed = true;
- 
-         // Momentum-preserving pouze pokud se hráč pohybuje nahoru (ve vzduchu)
-         float preserveVy = (!isGrounded() && body.velocity.y > 0f) ? body.velocity.y : 0f;
-         body.velocity = new Vector2(dashDirection.x * dashDistance, preserveVy);
- 
-         Invoke(nameof(EndDash), dashDuration);
+        if (SoundManager.instance != null && dashSound != null)
+            SoundManager.instance.PlaySound(dashSound);
+        isDashing = true;
+        dashCooldownTimer = dashCooldown;
+        anim.SetTrigger("dash");
+
+        Vector2 dashDirection = new Vector2(transform.localScale.x, 0).normalized;
+
+        // Potlačit gravitaci při air dash
+        if (!isGrounded())
+            body.gravityScale = 0f;
+
+        // Pokud jsme ve vzduchu, označ, že dash byl použit v této vzdušné fázi
+        if (!isGrounded())
+            hasAirDashed = true;
+
+        // Momentum-preserving pouze pokud se hráč pohybuje nahoru (ve vzduchu)
+        float preserveVy = (!isGrounded() && body.velocity.y > 0f) ? body.velocity.y : 0f;
+        body.velocity = new Vector2(dashDirection.x * dashDistance, preserveVy);
+
+        Invoke(nameof(EndDash), dashDuration);
     }
 
     // @SFX:DashEnd
@@ -540,54 +540,54 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator LedgeClimb()
     {
         // Debug.Log("Starting LedgeClimb coroutine");
-        
+
         // Set climbing flag to prevent grounded override
         isClimbingLedge = true;
-        
+
         // Set animator parameter to prevent jump animation during climb
         anim.SetBool("isClimbing", true);
-        
+
         // Check current animator state before making changes
         // Debug.Log($"Initial state: {anim.GetCurrentAnimatorStateInfo(0).IsName("LedgeGrab")}");
         // Debug.Log($"Initial state name hash: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
-        
+
         // Exit ledgeGrab state but keep grounded true to prevent airborne animation
         anim.SetBool("ledgeGrab", false);
         // Don't set grounded to false - this would trigger airborne animation
         // Debug.Log("Set ledgeGrab to false, keeping grounded state");
-        
+
         // Trigger the climb animation
         anim.SetTrigger("ledgeClimb");
         // Debug.Log("Triggered ledgeClimb animation");
-        
+
         // Check if trigger was set (Note: triggers are consumed immediately, so this might not work)
         // Debug.Log($"Checking animator parameters after trigger");
-        
+
         // Force animator update
         anim.Update(0f);
         yield return null;
-        
+
         // Check state after trigger
         // Debug.Log($"State after trigger: {anim.GetCurrentAnimatorStateInfo(0).IsName("Rattus-LedgeUp")}");
         // Debug.Log($"State hash after trigger: {anim.GetCurrentAnimatorStateInfo(0).shortNameHash}");
         // Debug.Log($"Current state full name: {anim.GetCurrentAnimatorStateInfo(0).fullPathHash}");
-        
+
         // Debug.Log("Using simple timer approach - animation should play now");
-        
+
         // Wait for the animation duration (this allows the animation to play)
         yield return new WaitForSeconds(ledgeAnimationDuration);
-        
+
         // Debug.Log("Animation time completed, moving character");
-        
+
         // Move the character after animation time
         transform.position = new Vector2(ledgePos.x, ledgePos.y + 1f);
         isGrabbingLedge = false;
         body.gravityScale = defaultGravityScale;
-        
+
         // Reset climbing flag and restore normal grounded behavior
         isClimbingLedge = false;
         anim.SetBool("grounded", isGrounded());
-        
+
         // Reset animator climbing parameter
         anim.SetBool("isClimbing", false);
 
@@ -640,15 +640,15 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 HandleStepUp(Vector2 targetVelocity)
     {
         float moveDirection = Mathf.Sign(horizontalInput);
-        
+
         // Zkontroluj, zda je před hráčem překážka na úrovni nohou (ground nebo wall)
         Vector2 frontCheck = new Vector2(
             boxCollider.bounds.center.x + (boxCollider.bounds.size.x * 0.5f + stepCheckDistance) * moveDirection,
             boxCollider.bounds.center.y - boxCollider.bounds.size.y * 0.3f
         );
-        
+
         RaycastHit2D frontHit = Physics2D.Raycast(frontCheck, Vector2.right * moveDirection, stepCheckDistance, groundLayer | wallLayer);
-        
+
         if (frontHit.collider != null)
         {
             // Zkontroluj, zda je nad překážkou volné místo pro step-up
@@ -656,13 +656,13 @@ public class PlayerMovement : MonoBehaviour
                 frontCheck.x + stepCheckDistance * moveDirection,
                 boxCollider.bounds.center.y + stepHeight
             );
-            
+
             RaycastHit2D stepUpHit = Physics2D.Raycast(stepUpCheck, Vector2.down, stepHeight + 0.1f, groundLayer | wallLayer);
-            
+
             if (stepUpHit.collider != null)
             {
                 float stepUpHeight = stepUpCheck.y - stepUpHit.point.y;
-                
+
                 // Pokud je schod dostatečně malý, automaticky ho překonej
                 if (stepUpHeight <= stepHeight && stepUpHeight > 0.05f)
                 {
@@ -671,9 +671,9 @@ public class PlayerMovement : MonoBehaviour
                         stepUpHit.point.x,
                         stepUpHit.point.y + boxCollider.bounds.size.y
                     );
-                    
+
                     Collider2D headCollision = Physics2D.OverlapCircle(headCheck, 0.1f, groundLayer | wallLayer);
-                    
+
                     if (headCollision == null)
                     {
                         // Proveď step-up - pozvedni hráče na schod
@@ -681,14 +681,14 @@ public class PlayerMovement : MonoBehaviour
                             transform.position.x,
                             stepUpHit.point.y + boxCollider.bounds.size.y * 0.5f + 0.05f
                         );
-                        
+
                         // Zachovej horizontální rychlost
                         return targetVelocity;
                     }
                 }
             }
         }
-        
+
         return targetVelocity;
     }
 
@@ -891,3 +891,19 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.DrawCube(snapPosition, new Vector3(0.3f, 0.3f, 0.3f));
     }
 }
+
+/* plány na budoucí update
+    konzultace se zvukařem a grafikem kvůly file hiearchii
+    check sound implementaci v codu případná optimalizace 
+    Animation update air / ground dash 
+    dodělání antshooter / dmg cripts 
+    Heavy/ charge attack
+    Air attack (hollow knight style probs)
+    Spike ball - idle stationary lock if attacked turns into a movable ball object, 
+    Flying Bee enemy - potřebuju solidní návrh na mechaniky 
+    konzultace s učitelem pro upravení Movement systému / optimalizace PlayerMovement.cs
+    problém s characterem sekájící se o zem 
+    scene tp transition / random scene selection based on location 
+    připravení finálního resolution settings a camera follow / filters etc
+    příprava světěl a registrace stínů 
+*/
