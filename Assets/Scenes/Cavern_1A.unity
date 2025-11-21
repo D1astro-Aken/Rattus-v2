@@ -1362,6 +1362,18 @@ PrefabInstance:
       value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: ambientClip1
+      value: 
+      objectReference: {fileID: 8300000, guid: 05b4e5bb0f4036444b86d98abb17c2fa, type: 3}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: ambientClip2
+      value: 
+      objectReference: {fileID: 8300000, guid: f7f0cf50fa88a86459714d34596a2557, type: 3}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: ambientClip3
+      value: 
+      objectReference: {fileID: 8300000, guid: e70fe7a8a79f19c43a4918b305791e47, type: 3}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
       propertyPath: ambientSource
       value: 
       objectReference: {fileID: 2070512481}
@@ -1373,6 +1385,10 @@ PrefabInstance:
       propertyPath: playerTransform
       value: 
       objectReference: {fileID: 734956}
+    - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
+      propertyPath: ambientMaxInterval
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 66950945958237509, guid: e9d936fdbf5b14341bb5d7f322744959, type: 3}
       propertyPath: stunClips.Array.size
       value: 1

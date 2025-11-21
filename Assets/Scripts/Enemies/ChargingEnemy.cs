@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ChargingEnemy : MonsterPatrol
@@ -23,6 +24,16 @@ public class ChargingEnemy : MonsterPatrol
     [SerializeField] private float alertVolume = 1f;
     private bool hasAlertedPlayer = false;
 
+    [Header("Ambient Base Sound")]
+    [SerializeField] private AudioClip ambientClip1;
+    [SerializeField] private AudioClip ambientClip2;
+    [SerializeField] private AudioClip ambientClip3;
+    [SerializeField] private float ambientMinInterval = 5f;
+    [SerializeField] private float ambientMaxInterval = 15f;
+    [SerializeField] private float ambientVolume = 1f;
+    [SerializeField] private bool ambientEnabled = true;
+    private Coroutine ambientCoroutine;
+
     private bool isCharging = false;
     private bool canCharge = true;
     private bool isStunned = false;
@@ -37,6 +48,62 @@ public class ChargingEnemy : MonsterPatrol
             GameObject player = GameObject.FindGameObjectWithTag("Player");
             if (player != null)
                 playerTransform = player.transform;
+        }
+
+        if (ambientSource == null)
+            ambientSource = GetComponent<AudioSource>();
+
+        if (ambientEnabled && ambientSource != null)
+            ambientCoroutine = StartCoroutine(AmbientRoutine());
+    }
+
+    private IEnumerator AmbientRoutine()
+    {
+        while (true)
+        {
+            float wait = Random.Range(ambientMinInterval, ambientMaxInterval);
+            yield return new WaitForSeconds(wait);
+
+            AudioClip clip = GetRandomAmbientClip();
+            if (clip != null)
+            {
+                if (ambientSource == null)
+                    ambientSource = GetComponent<AudioSource>();
+
+                if (ambientSource != null)
+                    ambientSource.PlayOneShot(clip, ambientVolume);
+            }
+        }
+    }
+
+    private AudioClip GetRandomAmbientClip()
+    {
+        AudioClip[] arr = new AudioClip[] { ambientClip1, ambientClip2, ambientClip3 };
+        List<AudioClip> list = new List<AudioClip>();
+        foreach (var c in arr)
+            if (c != null)
+                list.Add(c);
+        if (list.Count == 0)
+            return null;
+        int idx = Random.Range(0, list.Count);
+        return list[idx];
+    }
+
+    private void OnDisable()
+    {
+        if (ambientCoroutine != null)
+        {
+            StopCoroutine(ambientCoroutine);
+            ambientCoroutine = null;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (ambientCoroutine != null)
+        {
+            StopCoroutine(ambientCoroutine);
+            ambientCoroutine = null;
         }
     }
 
