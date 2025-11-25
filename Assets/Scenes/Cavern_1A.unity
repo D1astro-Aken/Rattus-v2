@@ -222,6 +222,30 @@ PrefabInstance:
       propertyPath: wallAttachSounds.Array.data[4]
       value: 
       objectReference: {fileID: 8300000, guid: 3635dacb35f01094486f1589b6156ffa, type: 3}
+    - target: {fileID: 1607114072926259555, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: audioSource
+      value: 
+      objectReference: {fileID: 1947139612}
+    - target: {fileID: 1607114072926259555, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: attackSound1
+      value: 
+      objectReference: {fileID: 8300000, guid: 7f01cdf94e150af4ea0a9137b3ae0b9c, type: 3}
+    - target: {fileID: 1607114072926259555, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: attackSound2
+      value: 
+      objectReference: {fileID: 8300000, guid: d4211baf7cca67b4fad0c6d9eeebbdb2, type: 3}
+    - target: {fileID: 1607114072926259555, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: attackSound3
+      value: 
+      objectReference: {fileID: 8300000, guid: 0b9e30b4c0ffecd46af4482734c02c12, type: 3}
+    - target: {fileID: 1607114072926259555, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: attackSound4
+      value: 
+      objectReference: {fileID: 8300000, guid: e4ee5a2908d20f640a3ded1fc72f8cd4, type: 3}
+    - target: {fileID: 1607114072926259555, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: attackSound5
+      value: 
+      objectReference: {fileID: 8300000, guid: 087dcfc4b9dfb3d4188e7f84629d6318, type: 3}
     - target: {fileID: 4451244668925898683, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_Pitch
       value: 1
