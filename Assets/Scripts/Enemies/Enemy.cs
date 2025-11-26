@@ -4,7 +4,11 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private int maxHealth = 100;
-    [SerializeField] private float knockbackDuration = 0.5f; // Duration of knockback
+    [SerializeField] private float knockbackDuration = 0.5f;
+    [SerializeField] public bool damageable = true;
+    [SerializeField] public bool knockbackOnly = false;
+    [SerializeField] public float knockbackMultiplier = 3f;
+    [SerializeField] public float upKnockBoost = 1.5f;
 
     private int currentHealth;
 
@@ -26,11 +30,51 @@ public class Enemy : MonoBehaviour
     {
         if (dead || isKnockedBack) return;
 
+        if (!damageable)
+        {
+            if (knockbackOnly)
+            {
+                var urchin2 = GetComponent<Urchin>();
+                if (urchin2 != null && urchin2.IsRollingState)
+                {
+                    urchin2.PrepareForKnockbackDuringRoll();
+                }
+                Vector2 boosted = new Vector2(
+                    knockbackDirection.x,
+                    Mathf.Max(knockbackDirection.y, 0f) + upKnockBoost
+                ) * knockbackMultiplier;
+                StartCoroutine(ApplyKnockback(boosted));
+            }
+            return;
+        }
+
         anim.SetTrigger("hurt");
         currentHealth -= damage;
 
-        // Apply knockback
-        StartCoroutine(ApplyKnockback(knockbackDirection));
+        // Apply knockback (special-case Urchin states)
+        var urchin = GetComponent<Urchin>();
+        if (urchin != null)
+        {
+            if (urchin.IsPatrolState)
+            {
+                urchin.OnDamagedDuringPatrol(knockbackDirection);
+                
+            }
+            else if (urchin.IsRollingState)
+            {
+                urchin.PrepareForKnockbackDuringRoll();
+                Vector2 knockUp = new Vector2(knockbackDirection.x, Mathf.Max(knockbackDirection.y, 0f) + 1f);
+                StartCoroutine(ApplyKnockback(knockUp * knockbackMultiplier));
+            }
+            else
+            {
+                StartCoroutine(ApplyKnockback(knockbackDirection * knockbackMultiplier));
+            }
+        }
+        else
+        {
+            StartCoroutine(ApplyKnockback(knockbackDirection * knockbackMultiplier));
+        }
 
         if (currentHealth <= 0)
         {
@@ -41,12 +85,12 @@ public class Enemy : MonoBehaviour
     private IEnumerator ApplyKnockback(Vector2 knockbackDirection)
     {
         isKnockedBack = true;
-        rb2d.velocity = Vector2.zero; // Reset current velocity
-        rb2d.AddForce(knockbackDirection * 3f, ForceMode2D.Impulse); // Apply knockback
+        rb2d.velocity = Vector2.zero;
+        rb2d.AddForce(knockbackDirection, ForceMode2D.Impulse);
 
         yield return new WaitForSeconds(knockbackDuration);
 
-        isKnockedBack = false; // Allow movement again
+        isKnockedBack = false;
     }
 
     private void Die()

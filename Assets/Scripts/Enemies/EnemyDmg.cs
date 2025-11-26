@@ -5,7 +5,10 @@ using UnityEngine;
 public class EnemyDmg : MonoBehaviour
 {
     [SerializeField] private float damage;
-    [SerializeField] private Health playerHealth; // Reference to the player health component
+    [SerializeField] private Health playerHealth;
+    [SerializeField] private float playerKnockbackMultiplier = 8f;
+    [SerializeField] private float playerKnockbackMultiplierRollingUrchin = 16f;
+    [SerializeField] private float playerKnockUpBoost = 1f;
 
     private Enemy enemy; // Reference to the Enemy script
 
@@ -28,17 +31,45 @@ public class EnemyDmg : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check if the enemy is not null, is not dead, and playerHealth is valid before applying damage
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            if (enemy != null && !enemy.IsDead() && playerHealth != null)
-            {
-                playerHealth.TakeDamage(damage);
-            }
-            else
-            {
-                Debug.LogError("Either enemy is dead or player health is missing.");
-            }
-        }
+        if (!collision.gameObject.CompareTag("Player")) return;
+        if (enemy == null || enemy.IsDead()) return;
+
+        var h = playerHealth != null ? playerHealth : collision.gameObject.GetComponent<Health>();
+        if (h != null) h.TakeDamage(damage);
+
+        var playerRb = collision.gameObject.GetComponent<Rigidbody2D>();
+        if (playerRb == null) return;
+
+        float mult = playerKnockbackMultiplier;
+        var urchin = GetComponent<Urchin>();
+        if (urchin != null && urchin.IsRollingState)
+            mult = playerKnockbackMultiplierRollingUrchin;
+
+        Vector2 dir = (collision.transform.position - transform.position).normalized;
+        Vector2 knock = new Vector2(dir.x, Mathf.Max(dir.y, 0f) + playerKnockUpBoost) * mult;
+        playerRb.velocity = Vector2.zero;
+        playerRb.AddForce(knock, ForceMode2D.Impulse);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        if (enemy == null || enemy.IsDead()) return;
+
+        var h = playerHealth != null ? playerHealth : other.GetComponent<Health>();
+        if (h != null) h.TakeDamage(damage);
+
+        var playerRb = other.GetComponent<Rigidbody2D>();
+        if (playerRb == null) return;
+
+        float mult = playerKnockbackMultiplier;
+        var urchin = GetComponent<Urchin>();
+        if (urchin != null && urchin.IsRollingState)
+            mult = playerKnockbackMultiplierRollingUrchin;
+
+        Vector2 dir = (other.transform.position - transform.position).normalized;
+        Vector2 knock = new Vector2(dir.x, Mathf.Max(dir.y, 0f) + playerKnockUpBoost) * mult;
+        playerRb.velocity = Vector2.zero;
+        playerRb.AddForce(knock, ForceMode2D.Impulse);
     }
 }
