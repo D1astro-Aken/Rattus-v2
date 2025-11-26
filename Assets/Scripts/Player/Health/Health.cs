@@ -27,6 +27,11 @@ public class Health : MonoBehaviour
         respawnPoint = transform.position; // Set initial respawn point to starting position
     }
 
+    public Vector3 RespawnPoint
+    {
+        get { return respawnPoint; }
+    }
+
     // @SFX:Hurt
     public void TakeDamage(float _damage)
     {

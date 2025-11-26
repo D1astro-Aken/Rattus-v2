@@ -129,6 +129,8 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim;
     private BoxCollider2D boxCollider;
     private float horizontalInput;
+    private Health health;
+    private Vector3 initialPosition;
 
     private float defaultGravityScale;
     private float lastFacingDirection = 1f;
@@ -147,6 +149,8 @@ public class PlayerMovement : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
+        health = GetComponent<Health>();
+        initialPosition = transform.position;
         defaultGravityScale = body.gravityScale;
 
         //tohle jsem pridal ja kdyby to bylo blby tka to smaz - fallback: vytvoř AudioSource pokud není přiřazený (usnadní používání)
@@ -161,6 +165,13 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         horizontalInput = Input.GetAxis("Horizontal");
+
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.R))
+        {
+            Vector3 dest = health != null ? health.RespawnPoint : initialPosition;
+            transform.position = dest;
+            body.velocity = Vector2.zero;
+        }
 
         // Flip player – pouze pokud NEjsme na ledge
         if (!isGrabbingLedge)

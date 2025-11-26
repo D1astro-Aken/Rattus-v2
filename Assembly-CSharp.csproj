@@ -55,6 +55,7 @@
     <UnityVersion>2022.3.54f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.54f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.54f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
@@ -74,7 +75,9 @@
     <Compile Include="Assets\Scripts\Collectibles\HealthCollectibles.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerAttack.cs" />
     <Compile Include="Assets\Scripts\Enemies\Enemy.cs" />
+    <Compile Include="Assets\Scripts\Enemies\MineBee.cs" />
     <Compile Include="Assets\Scripts\Player\LedgeHitbox.cs" />
+    <Compile Include="Assets\Scripts\Enemies\ProximityMine.cs" />
     <Compile Include="Assets\Scripts\Enemies\ShooterEnemy.cs" />
     <Compile Include="Assets\Scripts\Player\Health\Health.cs" />
     <Compile Include="Assets\Scripts\Core\MusicManager.cs" />
