@@ -183,10 +183,11 @@ public class PlayerMovement : MonoBehaviour
 
         // Animator params
         anim.SetBool("run", horizontalInput != 0);
-        if (!isClimbingLedge) // Don't override grounded during ledge climb animation
+        if (!isClimbingLedge)
         {
             anim.SetBool("grounded", isGrounded());
         }
+        anim.SetBool("dashing", isDashing);
         bool onWallNow = onWall();
         anim.SetBool("onwall", onWallNow);
         if (onWallNow && !prevOnWall && !isGrabbingLedge)
@@ -569,6 +570,7 @@ public class PlayerMovement : MonoBehaviour
          if (SoundManager.instance != null && dashSound != null)
              SoundManager.instance.PlaySound(dashSound);
          isDashing = true;
+         anim.SetBool("dashing", true);
          dashCooldownTimer = dashCooldown;
          anim.SetTrigger("dash");
  
@@ -593,6 +595,7 @@ public class PlayerMovement : MonoBehaviour
     private void EndDash()
     {
         isDashing = false;
+        anim.SetBool("dashing", false);
         body.gravityScale = defaultGravityScale; // obnovit gravitaci po dashi
     }
 
