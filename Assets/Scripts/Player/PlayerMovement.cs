@@ -532,11 +532,22 @@ public class PlayerMovement : MonoBehaviour
             isJumping = true;
             jumpTimeCounter = maxJumpTime;
             coyoteCounter = 0;
+
+            if (anim != null)
+            {
+                anim.ResetTrigger("jump");
+                anim.SetTrigger("jump");
+                var st = anim.GetCurrentAnimatorStateInfo(0);
+                anim.Play(st.fullPathHash, 0, 0f);
+            }
+            return;
         }
 
-        // Add null check for animator
         if (anim != null)
+        {
+            anim.ResetTrigger("jump");
             anim.SetTrigger("jump");
+        }
     }
 
     // @SFX:WallJump
