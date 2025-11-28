@@ -104,9 +104,16 @@ public class MonsterPatrol : MonoBehaviour
             else
             {
                 if (enableResetOnStuck)
-                    ResetToSpawn();
+                {
+                    if (!IsPointVisible(spawnPosition))
+                        ResetToSpawn();
+                    else
+                        ReturnToNearestPatrolPoint();
+                }
                 else
+                {
                     ReturnToNearestPatrolPoint();
+                }
             }
             noProgressTimer = 0f;
         }
@@ -159,7 +166,13 @@ public class MonsterPatrol : MonoBehaviour
 
         if (enableResetOnStuck && (Time.time - autoRoamStartTime) >= autoRoamMaxDuration)
         {
-            ResetToSpawn();
+            if (!IsPointVisible(spawnPosition))
+            {
+                ResetToSpawn();
+                return;
+            }
+            ExitAutoRoam();
+            ReturnToNearestPatrolPoint();
             return;
         }
 
@@ -230,6 +243,14 @@ public class MonsterPatrol : MonoBehaviour
         transform.position = spawnPosition;
         ExitAutoRoam();
         ReturnToNearestPatrolPoint();
+    }
+
+    private bool IsPointVisible(Vector3 worldPos)
+    {
+        var cam = Camera.main;
+        if (cam == null) return false;
+        var vp = cam.WorldToViewportPoint(worldPos);
+        return vp.z > 0f && vp.x >= 0f && vp.x <= 1f && vp.y >= 0f && vp.y <= 1f;
     }
 
     private bool HasParam(string name)
