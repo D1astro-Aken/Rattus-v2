@@ -246,6 +246,10 @@ PrefabInstance:
       propertyPath: attackSound5
       value: 
       objectReference: {fileID: 8300000, guid: 087dcfc4b9dfb3d4188e7f84629d6318, type: 3}
+    - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: m_LightType
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 4451244668925898683, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_Pitch
       value: 1
