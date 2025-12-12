@@ -8,7 +8,7 @@ public class EnemyDmg : MonoBehaviour
     [SerializeField] private Health playerHealth;
     [SerializeField] private float playerKnockbackMultiplier = 8f;
     [SerializeField] private float playerKnockbackMultiplierRollingUrchin = 16f;
-    [SerializeField] private float playerKnockUpBoost = 1f;
+    // [SerializeField] private float playerKnockUpBoost = 1f; // Nepoužíváno po změně logiky knockbacku
 
     private Enemy enemy; // Reference to the Enemy script
 
@@ -22,10 +22,20 @@ public class EnemyDmg : MonoBehaviour
             Debug.LogError("Enemy script not found on the same GameObject! Please attach the Enemy script.");
         }
 
+        // Automaticky najít hráče a jeho Health komponentu, pokud není přiřazena
+        if (playerHealth == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                playerHealth = player.GetComponent<Health>();
+            }
+        }
+
         // Ensure the playerHealth is assigned in the Inspector
         if (playerHealth == null)
         {
-            Debug.LogError("PlayerHealth is not assigned. Please assign it in the Inspector.");
+            Debug.LogError("PlayerHealth is not assigned and could not be found via tag 'Player'.");
         }
     }
 
@@ -46,7 +56,9 @@ public class EnemyDmg : MonoBehaviour
             mult = playerKnockbackMultiplierRollingUrchin;
 
         Vector2 dir = (collision.transform.position - transform.position).normalized;
-        Vector2 knock = new Vector2(dir.x, Mathf.Max(dir.y, 0f) + playerKnockUpBoost) * mult;
+        // Původní: Vector2 knock = new Vector2(dir.x, Mathf.Max(dir.y, 0f) + playerKnockUpBoost) * mult;
+        // Nové: Knockback čistě ve směru od nepřítele
+        Vector2 knock = dir * mult;
         playerRb.velocity = Vector2.zero;
         playerRb.AddForce(knock, ForceMode2D.Impulse);
     }
@@ -68,7 +80,9 @@ public class EnemyDmg : MonoBehaviour
             mult = playerKnockbackMultiplierRollingUrchin;
 
         Vector2 dir = (other.transform.position - transform.position).normalized;
-        Vector2 knock = new Vector2(dir.x, Mathf.Max(dir.y, 0f) + playerKnockUpBoost) * mult;
+        // Původní: Vector2 knock = new Vector2(dir.x, Mathf.Max(dir.y, 0f) + playerKnockUpBoost) * mult;
+        // Nové: Knockback čistě ve směru od nepřítele
+        Vector2 knock = dir * mult;
         playerRb.velocity = Vector2.zero;
         playerRb.AddForce(knock, ForceMode2D.Impulse);
     }

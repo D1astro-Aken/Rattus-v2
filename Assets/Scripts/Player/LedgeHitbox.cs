@@ -73,7 +73,7 @@ public class LedgeHitbox : MonoBehaviour
         // Kombinovaný layer mask pro detekci ledge - zahrnuje ground i wall objekty
         LayerMask ledgeDetectionLayer = groundLayer | wallLayer;
         
-        // 1. Zkontroluj, zda je nad hráčem volné místo (UpperCheck nahrazení)
+        // 1. Zkontroluj, zda je nad hráčem volné místo (UpperCheck)
         Vector2 aboveCheckPos = playerPos + Vector2.up * (upwardCheckDistance * 0.8f);
         Vector2 aboveBoxSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight * 0.8f);
         
@@ -83,48 +83,52 @@ public class LedgeHitbox : MonoBehaviour
             return false; // Nad hráčem je překážka, není to ledge
         }
 
-        // 2. Zkontroluj, zda je před hráčem ground nebo wall na úrovni rukou
-        Vector2 forwardCheckPos = playerPos + Vector2.right * direction * forwardCheckDistance;
-        Vector2 forwardBoxSize = new Vector2(ledgeDetectionWidth, ledgeDetectionHeight);
+        // 2. NOVÁ DETEKCE: Použij BoxCast směrem dopředu pro nalezení nejbližší zdi
+        // Tím zajistíme, že vždy najdeme čelo zdi, nikoliv vnitřek nebo zeď za ní
+        Vector2 boxOrigin = playerPos;
+        // Použijeme úzký box pro "scan" směrem dopředu. Výška odpovídá detekční výšce.
+        Vector2 boxSize = new Vector2(0.1f, ledgeDetectionHeight); 
         
-        Collider2D forwardCollider = Physics2D.OverlapBox(forwardCheckPos, forwardBoxSize, 0f, ledgeDetectionLayer);
-        if (forwardCollider == null)
+        RaycastHit2D wallHit = Physics2D.BoxCast(boxOrigin, boxSize, 0f, Vector2.right * direction, forwardCheckDistance, ledgeDetectionLayer);
+        
+        if (wallHit.collider == null)
         {
-            // Zkus také blíže k hráči pro lepší detekci
-            Vector2 closerCheckPos = playerPos + Vector2.right * direction * (forwardCheckDistance * 0.7f);
-            forwardCollider = Physics2D.OverlapBox(closerCheckPos, forwardBoxSize, 0f, ledgeDetectionLayer);
-            if (forwardCollider == null)
-            {
-                return false; // Před hráčem není ground ani wall, není co chytit
-            }
-            forwardCheckPos = closerCheckPos; // Použij bližší pozici
+            return false; // Žádná zeď v dosahu
         }
 
-        // 3. Zkontroluj, zda je nad pozicí před hráčem volné místo (skutečný ledge)
-        Vector2 forwardAbovePos = forwardCheckPos + Vector2.up * (ledgeDetectionHeight + 0.1f);
-        Vector2 forwardAboveSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight * 0.9f);
-        Collider2D forwardAboveCollider = Physics2D.OverlapBox(forwardAbovePos, forwardAboveSize, 0f, ledgeDetectionLayer);
+        // 3. Zkontroluj, zda je nad nalezenou zdí volno (Ledge) a najdi přesnou výšku
+        // Použijeme X souřadnici nárazu (wallHit.point.x) a posuneme se kousek do zdi
+        float checkX = wallHit.point.x + (direction * 0.1f); 
         
-        if (forwardAboveCollider != null)
+        // Raycast shora dolů pro nalezení přesné výšky ledge
+        // Začneme dostatečně vysoko (upwardCheckDistance)
+        Vector2 rayOrigin = new Vector2(checkX, playerPos.y + upwardCheckDistance);
+        float rayDistance = upwardCheckDistance + (ledgeDetectionHeight * 2f); 
+        
+        RaycastHit2D ledgeHit = Physics2D.Raycast(rayOrigin, Vector2.down, rayDistance, ledgeDetectionLayer);
+        
+        if (ledgeHit.collider == null)
         {
-            return false; // Nad ledge pozicí není volné místo
+            return false; // Nenalezen povrch shora
+        }
+        
+        // (Volitelné) Zde by šla přidat kontrola, zda je ledgeHit.point.y v dosahu hráče
+
+        // 4. Zkontroluj volný prostor nad ledge (Headroom)
+        // Zkontrolujeme prostor nad nalezenou hranou
+        Vector2 headroomCheckPos = new Vector2(checkX, ledgeHit.point.y + (ledgeDetectionHeight * 0.5f) + 0.1f);
+        Vector2 headroomBoxSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight);
+        
+        Collider2D headroomCollider = Physics2D.OverlapBox(headroomCheckPos, headroomBoxSize, 0f, ledgeDetectionLayer);
+        if (headroomCollider != null)
+        {
+            return false; // Nad ledge není místo pro hráče
         }
 
-        // 4. Najdi skutečnou hranu ledge pro konzistentní pozicování
-        // Raycast dolů z pozice nad přední hranou detekčního boxu
-        Vector2 rayStart = forwardCheckPos + Vector2.right * direction * (ledgeDetectionWidth * 0.5f) + Vector2.up * (ledgeDetectionHeight + 0.2f);
-        RaycastHit2D hit = Physics2D.Raycast(rayStart, Vector2.down, ledgeDetectionHeight + 0.4f, ledgeDetectionLayer);
-        
-        if (hit.collider != null)
-        {
-            // Použij hit point jako přesnou pozici ledge hrany
-            ledgePosition = hit.point;
-        }
-        else
-        {
-            // Fallback na původní metodu pokud raycast selže
-            ledgePosition = forwardCheckPos + Vector2.up * (ledgeDetectionHeight * 0.5f);
-        }
+        // 5. Ulož přesnou pozici
+        // X = Pozice stěny (wallHit.point.x)
+        // Y = Výška ledge (ledgeHit.point.y)
+        ledgePosition = new Vector2(wallHit.point.x, ledgeHit.point.y);
         
         return true;
     }
@@ -139,41 +143,44 @@ public class LedgeHitbox : MonoBehaviour
     // @SFX:DebugGizmos
     private void OnDrawGizmosSelected()
     {
-        if (!Application.isPlaying)
-            return;
-
         float direction = Mathf.Sign(transform.root.localScale.x);
         Vector2 playerPos = transform.position;
 
-        // Zobrazení OverlapBox pozic
+        // 1. Above Check
         Gizmos.color = Color.cyan;
-        
-        // Above check box (UpperCheck nahrazení)
         Vector2 aboveCheckPos = playerPos + Vector2.up * (upwardCheckDistance * 0.8f);
         Vector2 aboveBoxSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight * 0.8f);
         Gizmos.DrawWireCube(aboveCheckPos, aboveBoxSize);
 
-        // Forward check box
-        Vector2 forwardCheckPos = playerPos + Vector2.right * direction * forwardCheckDistance;
-        Vector2 forwardBoxSize = new Vector2(ledgeDetectionWidth, ledgeDetectionHeight);
-        Gizmos.DrawWireCube(forwardCheckPos, forwardBoxSize);
+        // 2. Forward BoxCast (Range)
+        Gizmos.color = Color.blue;
+        Vector2 boxOrigin = playerPos;
+        Vector2 boxSize = new Vector2(0.1f, ledgeDetectionHeight);
+        
+        // Draw start box
+        Gizmos.DrawWireCube(boxOrigin, boxSize);
+        // Draw end box (max range)
+        Vector2 boxEnd = boxOrigin + Vector2.right * direction * forwardCheckDistance;
+        Gizmos.DrawWireCube(boxEnd, boxSize);
+        // Draw connection
+        Gizmos.DrawLine(boxOrigin, boxEnd);
 
-        // Forward above check box
-        Vector2 forwardAbovePos = forwardCheckPos + Vector2.up * (ledgeDetectionHeight + 0.1f);
-        Vector2 forwardAboveSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight * 0.9f);
-        Gizmos.DrawWireCube(forwardAbovePos, forwardAboveSize);
-
-        // Raycast pro nalezení přesné hrany ledge
-        Vector2 rayStart = forwardCheckPos + Vector2.right * direction * (ledgeDetectionWidth * 0.5f) + Vector2.up * (ledgeDetectionHeight + 0.2f);
-        Vector2 rayEnd = rayStart + Vector2.down * (ledgeDetectionHeight + 0.4f);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(rayStart, rayEnd);
-
-        // hit point (pokud je)
-        if (canGrab)
+        // 3. Hit Visualization (Play Mode Only)
+        if (Application.isPlaying && canGrab)
         {
             Gizmos.color = Color.green;
             Gizmos.DrawSphere(ledgePosition, 0.05f);
+            
+            // Visualize the vertical ray that found the surface
+            Gizmos.color = Color.yellow;
+            Vector2 rayTop = new Vector2(ledgePosition.x, playerPos.y + upwardCheckDistance);
+            Gizmos.DrawLine(rayTop, ledgePosition);
+            
+            // Visualize Headroom check
+            Gizmos.color = Color.magenta;
+            Vector2 headroomCheckPos = new Vector2(ledgePosition.x + direction * 0.1f, ledgePosition.y + (ledgeDetectionHeight * 0.5f) + 0.1f);
+            Vector2 headroomBoxSize = new Vector2(ledgeDetectionWidth * 0.9f, ledgeDetectionHeight);
+            Gizmos.DrawWireCube(headroomCheckPos, headroomBoxSize);
         }
     }
 }

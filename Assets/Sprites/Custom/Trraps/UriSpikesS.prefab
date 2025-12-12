@@ -79,8 +79,8 @@ SpriteRenderer:
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 592e00a68dd339845817cf410c34abe7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
+  m_FlipX: 1
+  m_FlipY: 1
   m_DrawMode: 0
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
@@ -120,7 +120,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.035579443}
+  m_Offset: {x: 0, y: 0.19375294}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -131,7 +131,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 0.9288411}
+  m_Size: {x: 1, y: 0.47813833}
   m_EdgeRadius: 0
 --- !u!114 &7069212202991956681
 MonoBehaviour:
@@ -149,7 +149,6 @@ MonoBehaviour:
   playerHealth: {fileID: 0}
   playerKnockbackMultiplier: 8
   playerKnockbackMultiplierRollingUrchin: 16
-  playerKnockUpBoost: 1
 --- !u!114 &7395773020844891686
 MonoBehaviour:
   m_ObjectHideFlags: 0

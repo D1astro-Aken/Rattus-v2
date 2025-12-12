@@ -269,10 +269,11 @@ MonoBehaviour:
   extraJumps: 1
   wallJumpX: 4
   wallJumpY: 8
-  wallJumpCooldown: 1
+  wallJumpCooldown: 0.5
   wallCooldownAfterLedge: 0.2
   dashDistance: 10
   dashCooldown: 1
+  dashDuration: 0.2
   ledgeJumpBackDistance: 0.5
   ledgeAnimationDuration: 0.44
   ledgeJumpPower: 14
@@ -282,21 +283,54 @@ MonoBehaviour:
   ledgeVerticalOffset: 0.2
   ledgeHitbox: {fileID: 8643228384301851140}
   ledgeGrabCooldown: 0.2
-  stepHeight: 0.3
-  stepCheckDistance: 0.1
+  stepHeight: 0.2
+  stepCheckDistance: 0.18
   fallGravityMultiplier: 2
   lowJumpMultiplier: 2
   jumpBufferTime: 0.1
   maxJumpTime: 0.35
   maxFallSpeed: 15
+  wallAttachSound: {fileID: 8300000, guid: f69fdee92573fcd47a504334920d51af, type: 3}
+  wallAttachSounds:
+  - {fileID: 8300000, guid: f69fdee92573fcd47a504334920d51af, type: 3}
+  - {fileID: 8300000, guid: d659402141613f54097c4e0bcb0b9700, type: 3}
+  - {fileID: 8300000, guid: 9a1015c0e9032b240ad4c0ce4a750231, type: 3}
+  - {fileID: 8300000, guid: ebe120d90c0be2d46bdf5aab50ec79df, type: 3}
+  - {fileID: 8300000, guid: 3635dacb35f01094486f1589b6156ffa, type: 3}
+  groundAcceleration: 60
+  groundDeceleration: 60
+  airAcceleration: 30
+  airDeceleration: 30
+  apexThreshold: 0.3
+  apexGravityMultiplier: 0.8
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   wallLayer:
     serializedVersion: 2
     m_Bits: 128
-  jumpSound: {fileID: 8300000, guid: 55c36aca08f759443be2210fde8510b4, type: 3}
-  dashSound: {fileID: 8300000, guid: 693936f47ba0dca4c80c9f21d6006a0a, type: 3}
+  groundCheckDistance: 0.1
+  groundCheckSizeScale: {x: 0.72, y: 0.1}
+  groundCheckOffsetY: 0.09
+  wallCheckDistance: 0.1
+  wallCheckSizeScale: {x: 0.8, y: 0.9}
+  wallCheckOffset: {x: 0, y: 0}
+  sideNormalXThreshold: 0.8
+  sideNormalYMax: 0.5
+  slidingDownVyThreshold: -0.05
+  wallCoyoteTime: 0.08
+  wallDetachInputThreshold: 0.3
+  wallReattachDelay: 0.12
+  wallSlideResetTime: -0.01
+  jumpSound: {fileID: 8300000, guid: 3d4fbfc42fbbbf742a0d2f49eff417c1, type: 3}
+  dashSound: {fileID: 8300000, guid: bc55607f4fb3e6a4e835ca1d81a65363, type: 3}
+  ledgeSound: {fileID: 8300000, guid: 7c5632e62cb68bd45a8e24611f089137, type: 3}
+  ledgeAudioSource: {fileID: 4451244668925898683}
+  fallLandingSound: {fileID: 8300000, guid: ff8942fdd1d4e4247b9a30f58e72be5a, type: 3}
+  fallSoundThreshold: 0.7
+  sitSound: {fileID: 8300000, guid: 39f41ab721ba97149b78a69ec0c512a8, type: 3}
+  doubleJumpSound: {fileID: 8300000, guid: 45928d6940f3a3c49a6321665fbb9131, type: 3}
+  idleSitDelay: 5
 --- !u!95 &4679209464447048654
 Animator:
   serializedVersion: 5
@@ -340,6 +374,12 @@ MonoBehaviour:
   Enemies:
     serializedVersion: 2
     m_Bits: 512
+  attackSound1: {fileID: 0}
+  attackSound2: {fileID: 0}
+  attackSound3: {fileID: 0}
+  attackSound4: {fileID: 0}
+  attackSound5: {fileID: 0}
+  audioSource: {fileID: 0}
 --- !u!114 &4160371410207713875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -370,14 +410,14 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 0.206
-  m_Pitch: 0.8
+  m_Pitch: 1
   Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1.3317413
+  MinDistance: 0.7440996
   MaxDistance: 500
   Pan2D: 0
   rolloffMode: 0
@@ -541,7 +581,7 @@ Transform:
   m_GameObject: {fileID: 987558741780985814}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.42, y: -0.27, z: 0}
+  m_LocalPosition: {x: 0.577, y: -0.381, z: 0}
   m_LocalScale: {x: 0.67198014, y: 0.6359394, z: 0.97643}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -559,14 +599,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9071c0349bf51f44b1648c9300b4cc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ledgeDetectionWidth: 0.26
-  ledgeDetectionHeight: 0.38
-  forwardCheckDistance: 0.22
-  upwardCheckDistance: 0.78
+  ledgeDetectionWidth: 0.35
+  ledgeDetectionHeight: 0.6
+  forwardCheckDistance: 0.3
+  upwardCheckDistance: 0.3
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   wallLayer:
     serializedVersion: 2
     m_Bits: 128
-  detectionRate: 0.1
+  detectionRate: 0.07

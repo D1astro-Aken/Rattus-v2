@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpCooldownTimer;
 
     [Header("Wall Mechanics Cooldown after Ledge")]
-    [SerializeField] private float wallCooldownAfterLedge = 0.2f;
+    [SerializeField] private float wallCooldownAfterLedge = 0.3f;
     private float wallCooldownTimer;
 
     [Header("Dash Mechanics")]
@@ -199,7 +199,7 @@ public class PlayerMovement : MonoBehaviour
             anim.SetBool("grounded", isGrounded());
         }
         anim.SetBool("dashing", isDashing);
-        bool onWallNow = onWall();
+        bool onWallNow = onWall() && !isGrabbingLedge && !isClimbingLedge;
         anim.SetBool("onwall", onWallNow);
         if (onWallNow && !prevOnWall && !isGrabbingLedge)
         {
@@ -839,6 +839,10 @@ public class PlayerMovement : MonoBehaviour
     // @SFX:WallCheck
     private bool onWall()
     {
+        // Pokud je aktivní cooldown po ledge akci, ignoruj zdi
+        if (wallCooldownTimer > 0)
+            return false;
+
         // Side wall check: horizontal cast with normal filter (serialized tuning)
         Vector2 sideCheckSize = new Vector2(
             boxCollider.bounds.size.x * wallCheckSizeScale.x,
