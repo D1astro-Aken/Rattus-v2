@@ -46,17 +46,51 @@ public class ScenePortal : MonoBehaviour
 
     private void LoadTargetScene()
     {
+        // Zajistíme existenci SceneTransitionManageru
+        if (SceneTransitionManager.Instance == null)
+        {
+            GameObject managerObj = new GameObject("SceneTransitionManager");
+            managerObj.AddComponent<SceneTransitionManager>();
+        }
+
         // 1) explicitní jméno scény
         if (!string.IsNullOrEmpty(nextSceneName))
         {
-            SceneManager.LoadScene(nextSceneName);
+            // DIAGNOSTIKA: Ověření, zda scéna existuje v Build Settings
+            bool sceneFound = false;
+            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                string path = SceneUtility.GetScenePathByBuildIndex(i);
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(path);
+                if (sceneName == nextSceneName)
+                {
+                    sceneFound = true;
+                    break;
+                }
+            }
+
+            if (!sceneFound)
+            {
+                Debug.LogError($"CHYBA: Scéna '{nextSceneName}' nebyla nalezena v Build Settings!");
+                Debug.LogError("Dostupné scény v Build Settings:");
+                for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+                {
+                    string path = SceneUtility.GetScenePathByBuildIndex(i);
+                    string name = System.IO.Path.GetFileNameWithoutExtension(path);
+                    Debug.LogError($" [{i}] {name} (Path: {path})");
+                }
+                return; // Nepokoušej se načíst, pokud tam není
+            }
+
+            // Použijeme nový transition manager místo přímého načtení
+            SceneTransitionManager.Instance.LoadSceneWithTransition(nextSceneName);
             return;
         }
 
         // 2) explicitní build index
         if (nextSceneBuildIndex >= 0)
         {
-            SceneManager.LoadScene(nextSceneBuildIndex);
+            SceneTransitionManager.Instance.LoadSceneWithTransition(nextSceneBuildIndex);
             return;
         }
 
@@ -65,7 +99,7 @@ public class ScenePortal : MonoBehaviour
         int nextIndex = currentIndex + 1;
         if (nextIndex < SceneManager.sceneCountInBuildSettings)
         {
-            SceneManager.LoadScene(nextIndex);
+            SceneTransitionManager.Instance.LoadSceneWithTransition(nextIndex);
         }
         else
         {
