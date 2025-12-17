@@ -48,6 +48,10 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isGrabbingLedge;
     public bool IsGrabbingLedge => isGrabbingLedge;
+    public bool IsOnWall => onWall();
+    public bool IsDashing => isDashing;
+    public bool IsClimbingLedge => isClimbingLedge;
+
     private bool hasSnapped;
     private Vector2 ledgePos;
     private bool isClimbingLedge; // Flag to prevent grounded override during climb animation
@@ -114,16 +118,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private AudioClip fallLandingSound; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
     [SerializeField] private float fallSoundThreshold = 3f; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
 
-    //tohle jsem pridal ja kdyby to bylo blby tka to smaz - serialized field pro sit zvuk (kdyz sedne)
-    [SerializeField] private AudioClip sitSound; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
-
     //tohle jsem pridal ja kdyby to bylo blby tka to smaz - serialized field pro double-jump zvuk (specificky pro "ten druhej")
     [SerializeField] private AudioClip doubleJumpSound; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
-
-    [Header("Idle Sit")]
-    [SerializeField] private float idleSitDelay = 5f; // Time before entering sit animation
-    private float idleTimer = 0f;
-    private bool isSitting = false;
 
     private Rigidbody2D body;
     private Animator anim;
@@ -212,35 +208,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
         prevOnWall = onWallNow;
-
-        // Idle Sit logic: enter sit state after being idle on ground for a while
-        bool noHorizontalInput = Mathf.Abs(horizontalInput) < 0.01f;
-        bool isOnGround = isGrounded();
-        bool veryStill = Mathf.Abs(body.velocity.x) < 0.05f && Mathf.Abs(body.velocity.y) < 0.05f;
-        bool canSit = isOnGround && !isGrabbingLedge && !onWall() && !isDashing && !isClimbingLedge;
-
-        if (canSit && noHorizontalInput && veryStill)
-        {
-            idleTimer += Time.deltaTime;
-            if (idleTimer >= idleSitDelay && !isSitting)
-            {
-                isSitting = true;
-
-                //tohle jsem pridal ja kdyby to bylo blby tka to smaz - přehraj sit sound při vstupu do sedu
-                if (ledgeAudioSource != null && sitSound != null)
-                {
-                    ledgeAudioSource.PlayOneShot(sitSound);
-                }
-            }
-        }
-        else
-        {
-            idleTimer = 0f;
-            if (isSitting) // leave sit state
-                isSitting = false;
-        }
-
-        anim.SetBool("sit", isSitting);
 
         //tohle jsem pridal ja kdyby to bylo blby tka to smaz
         // sledování délky pádu; pokud hráč byl ve stavu pádu (vert. rychlost dolů) a strávil v tom stavu >= fallSoundThreshold sekund,

@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Cavern_1A.unity
     guid: 48d7fe55d3ccbea4e94a84c4020df460
+  - enabled: 1
+    path: Assets/Scenes/Cavern_CrystalTree.unity
+    guid: 26758c3984f6d8541af4db61d304356c
   m_configObjects: {}
