@@ -13,6 +13,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private int heavyAttackDamage = 70;
     [SerializeField] private float heavyKnockbackMultiplier = 2.0f;
     [SerializeField] private float heavyAttackDelay = 0.5f; // Time until damage is applied for heavy attack
+    [SerializeField] private float chargeTime = 1.0f; // Time to hold button to trigger heavy attack
 
     [SerializeField] private Transform attackPoint;
     [SerializeField] private int attackDamage = 40;
@@ -33,6 +34,8 @@ public class PlayerAttack : MonoBehaviour
 
     private float cooldownTimer = Mathf.Infinity;
     private bool isAttacking = false;
+    private float chargeTimer = 0f;
+    private bool isCharging = false;
 
     private void Awake()
     {
@@ -52,13 +55,36 @@ public class PlayerAttack : MonoBehaviour
 
         if (!isAttacking && playerMovement.isGrounded())
         {
-            if (Input.GetMouseButtonDown(0) && cooldownTimer > attackCooldown)
+            // Charge-up Logic (Hold Left Click)
+            if (Input.GetMouseButton(0))
             {
-                StartCoroutine(PerformAttack(attackDamage, 1f, "attack", attackCooldown, attackDelay));
+                if (!isCharging)
+                {
+                    isCharging = true;
+                    chargeTimer = 0f;
+                    anim.SetBool("isCharging", true);
+                }
+
+                chargeTimer += Time.deltaTime;
             }
-            else if (Input.GetMouseButtonDown(1) && cooldownTimer > heavyAttackCooldown)
+            else if (Input.GetMouseButtonUp(0))
             {
-                StartCoroutine(PerformAttack(heavyAttackDamage, heavyKnockbackMultiplier, "heavyAttack", heavyAttackCooldown, heavyAttackDelay));
+                if (isCharging)
+                {
+                    isCharging = false;
+                    anim.SetBool("isCharging", false);
+
+                    if (chargeTimer >= chargeTime && cooldownTimer > heavyAttackCooldown)
+                    {
+                        // Charged enough -> Heavy Attack
+                        StartCoroutine(PerformAttack(heavyAttackDamage, heavyKnockbackMultiplier, "heavyAttack", heavyAttackCooldown, heavyAttackDelay));
+                    }
+                    else if (cooldownTimer > attackCooldown)
+                    {
+                        // Released too early -> Normal Attack
+                        StartCoroutine(PerformAttack(attackDamage, 1f, "attack", attackCooldown, attackDelay));
+                    }
+                }
             }
         }
     }
