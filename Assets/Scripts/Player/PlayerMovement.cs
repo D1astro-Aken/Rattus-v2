@@ -192,7 +192,8 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("run", horizontalInput != 0);
         if (!isClimbingLedge)
         {
-            anim.SetBool("grounded", isGrounded());
+            bool groundedForAnim = isGrounded() && !isJumping;
+            anim.SetBool("grounded", groundedForAnim);
         }
         anim.SetBool("dashing", isDashing);
         bool onWallNow = onWall() && !isGrabbingLedge && !isClimbingLedge;
@@ -502,10 +503,8 @@ public class PlayerMovement : MonoBehaviour
 
             if (anim != null)
             {
-                anim.ResetTrigger("jump");
-                anim.SetTrigger("jump");
-                var st = anim.GetCurrentAnimatorStateInfo(0);
-                anim.Play(st.fullPathHash, 0, 0f);
+                anim.ResetTrigger("doubleJump");
+                anim.SetTrigger("doubleJump");
             }
             return;
         }
