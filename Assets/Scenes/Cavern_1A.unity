@@ -320,11 +320,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -14.43
+      value: -22.95
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 27.09
+      value: 37.62
       objectReference: {fileID: 0}
     - target: {fileID: 8046341915116889153, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7063,7 +7063,12 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3117525276971317009, guid: 30725ab3896af7b4eac0b5850f9f179b, type: 3}
   m_PrefabInstance: {fileID: 1549212156}
   m_PrefabAsset: {fileID: 0}
---- !u!43 &570722765
+--- !u!4 &572340635 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7592184079058956998, guid: 68217f62632ac3744bf03945f43b009d, type: 3}
+  m_PrefabInstance: {fileID: 282799359}
+  m_PrefabAsset: {fileID: 0}
+--- !u!43 &576406148
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7228,11 +7233,6 @@ Mesh:
     offset: 0
     size: 0
     path: 
---- !u!4 &572340635 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7592184079058956998, guid: 68217f62632ac3744bf03945f43b009d, type: 3}
-  m_PrefabInstance: {fileID: 282799359}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &578707315
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12546,8 +12546,8 @@ MonoBehaviour:
   - {x: 4, y: 1.9999995, z: 0}
   - {x: 4, y: -2, z: 0}
   m_ShapePathHash: 0
-  m_Mesh: {fileID: 570722765}
-  m_InstanceId: 30880
+  m_Mesh: {fileID: 576406148}
+  m_InstanceId: 44798
   m_LocalBounds:
     m_Center: {x: 0, y: -0.00000023841858, z: 0}
     m_Extent: {x: 4, y: 1.9999998, z: 0}
