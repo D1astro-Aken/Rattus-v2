@@ -12,6 +12,10 @@ public class Urchin : MonsterPatrol
     public float rollingDuration = 4f;
     public float rollEndDistance = 8f;
 
+    [Header("Sounds")]
+    public AudioClip[] contactSounds;
+    private AudioSource audioSource;
+
     private UrchinState state = UrchinState.Patrol;
     private Enemy enemy;
     private float nearTimer;
@@ -30,6 +34,13 @@ public class Urchin : MonsterPatrol
             var player = GameObject.FindGameObjectWithTag("Player");
             if (player != null) playerTransform = player.transform;
         }
+        
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
         EnterPatrol();
     }
 
@@ -178,9 +189,15 @@ public class Urchin : MonsterPatrol
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            Debug.Log("[Urchin] Collision with Player detected (OnCollisionEnter2D)");
+            PlayRandomContactSound();
+            return;
+        }
+
         if (state != UrchinState.Rolling) return;
         var other = collision.collider;
-        if (other.CompareTag("Player")) return;
         string ln = LayerMask.LayerToName(other.gameObject.layer);
         if (ln == "Ground" || ln == "Wall")
         {
@@ -243,5 +260,17 @@ public class Urchin : MonsterPatrol
             if (p.name == name) return true;
         }
         return false;
+    }
+
+    private void PlayRandomContactSound()
+    {
+        if (contactSounds != null && contactSounds.Length > 0 && audioSource != null)
+        {
+            // Pick a random sound from the array
+            int index = Random.Range(0, contactSounds.Length);
+            // Use PlayOneShot so it doesn't cut off if triggered rapidly, 
+            // though for damage sounds usually one at a time is fine.
+            audioSource.PlayOneShot(contactSounds[index]);
+        }
     }
 }
