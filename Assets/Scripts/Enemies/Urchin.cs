@@ -13,7 +13,9 @@ public class Urchin : MonsterPatrol
     public float rollEndDistance = 8f;
 
     [Header("Sounds")]
+    // Sounds for contact and hits
     public AudioClip[] contactSounds;
+    public AudioClip[] hitSounds;
     private AudioSource audioSource;
 
     private UrchinState state = UrchinState.Patrol;
@@ -40,6 +42,8 @@ public class Urchin : MonsterPatrol
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+        // Force 2D sound
+        audioSource.spatialBlend = 0f;
 
         EnterPatrol();
     }
@@ -213,8 +217,14 @@ public class Urchin : MonsterPatrol
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (other.CompareTag("Player"))
+        {
+            Debug.Log("[Urchin] Trigger with Player detected (OnTriggerEnter2D)");
+            PlayRandomContactSound();
+            return;
+        }
+
         if (state != UrchinState.Rolling) return;
-        if (other.CompareTag("Player")) return;
         string ln = LayerMask.LayerToName(other.gameObject.layer);
         if (ln == "Ground" || ln == "Wall")
         {
@@ -271,6 +281,20 @@ public class Urchin : MonsterPatrol
             // Use PlayOneShot so it doesn't cut off if triggered rapidly, 
             // though for damage sounds usually one at a time is fine.
             audioSource.PlayOneShot(contactSounds[index]);
+        }
+    }
+
+    public void PlayHitSound()
+    {
+        if (hitSounds != null && hitSounds.Length > 0 && audioSource != null)
+        {
+            int index = Random.Range(0, hitSounds.Length);
+            audioSource.PlayOneShot(hitSounds[index]);
+            Debug.Log($"[Urchin] Playing hit sound: {hitSounds[index].name}");
+        }
+        else
+        {
+             Debug.LogWarning("[Urchin] Cannot play hit sound. Check if hitSounds are assigned and AudioSource exists.");
         }
     }
 }

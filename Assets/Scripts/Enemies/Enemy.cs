@@ -30,6 +30,13 @@ public class Enemy : MonoBehaviour
     {
         if (dead || isKnockedBack) return;
 
+        // Try to play hit sound if it's an Urchin (covers all states)
+        var urchinSound = GetComponent<Urchin>();
+        if (urchinSound != null)
+        {
+            urchinSound.PlayHitSound();
+        }
+
         if (!damageable)
         {
             if (knockbackOnly)
@@ -48,7 +55,10 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        anim.SetTrigger("hurt");
+        if (HasParameter("hurt"))
+        {
+            anim.SetTrigger("hurt");
+        }
         currentHealth -= damage;
 
         // Apply knockback (special-case Urchin states)
@@ -97,7 +107,10 @@ public class Enemy : MonoBehaviour
     {
         if (dead) return;
 
-        anim.SetTrigger("die");
+        if (HasParameter("die"))
+        {
+            anim.SetTrigger("die");
+        }
         dead = true;
 
         rb2d.velocity = Vector2.zero;
@@ -120,5 +133,15 @@ public class Enemy : MonoBehaviour
     public bool IsKnockedBack()
     {
         return isKnockedBack;
+    }
+
+    private bool HasParameter(string paramName)
+    {
+        if (anim == null) return false;
+        foreach (AnimatorControllerParameter param in anim.parameters)
+        {
+            if (param.name == paramName) return true;
+        }
+        return false;
     }
 }
