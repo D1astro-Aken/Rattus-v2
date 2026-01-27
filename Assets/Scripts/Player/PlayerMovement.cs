@@ -137,6 +137,11 @@ public class PlayerMovement : MonoBehaviour
     private float lastWallNormalX = 0f;
     private float lastWallJumpTime = -999f;
 
+    // Platform movement support
+    private MovablePlatforms currentPlatform;
+    private Vector3 ledgeLocalPos;
+    private Transform currentLedgeTransform;
+
     //tohle jsem pridal ja kdyby to bylo blby tka to smaz - interní timer pro sledování pádu
     private float fallTimer = 0f; //tohle jsem pridal ja kdyby to bylo blby tka to smaz
 
@@ -317,6 +322,17 @@ public class PlayerMovement : MonoBehaviour
                 
                 transform.position = snapPosition;
                 hasSnapped = true;
+
+                // Update local position after snapping to ensure we stick to this exact spot
+                if (currentLedgeTransform != null)
+                {
+                    ledgeLocalPos = currentLedgeTransform.InverseTransformPoint(transform.position);
+                }
+            }
+            else if (currentLedgeTransform != null)
+            {
+                // Continuous position update for moving platforms
+                transform.position = currentLedgeTransform.TransformPoint(ledgeLocalPos);
             }
 
             // Climb, jump, drop
@@ -324,10 +340,16 @@ public class PlayerMovement : MonoBehaviour
                 StartCoroutine(LedgeClimb());
 
             if (Input.GetKeyDown(KeyCode.Space) && !isClimbingLedge)
+            {
                 LedgeJump();
+                return;
+            }
 
             if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+            {
                 ReleaseLedge();
+                return;
+            }
 
             if (!ledgeHitbox.canGrab)
             {
@@ -422,14 +444,32 @@ public class PlayerMovement : MonoBehaviour
             // Hladká akcelerace/decelerace pro horizontální pohyb
             float currentVelX = body.velocity.x;
             float targetSpeed = horizontalInput * speed;
+            
+            // Calculate relative velocity if on platform
+            float platformVelX = 0f;
+            if (currentPlatform != null)
+            {
+                platformVelX = currentPlatform.CurrentVelocity.x;
+                currentVelX -= platformVelX; // Work with relative velocity
+            }
+
             bool hasInput = Mathf.Abs(horizontalInput) > 0.01f;
             float accelRate = isGrounded() 
                 ? (hasInput ? groundAcceleration : groundDeceleration)
                 : (hasInput ? airAcceleration : airDeceleration);
             float newVelX = Mathf.MoveTowards(currentVelX, targetSpeed, accelRate * Time.deltaTime);
 
+            // Add platform velocity back
+            if (currentPlatform != null)
+            {
+                newVelX += platformVelX;
+            }
+
             Vector2 targetVelocity = new Vector2(newVelX, body.velocity.y);
 
+            // Platform Y velocity is handled by physics (friction/gravity) usually, but we can help it if needed.
+            // For X, we definitely need the manual addition.
+            
             // Step-up kontrola při pohybu po zemi
             if (hasInput && isGrounded())
             {
@@ -594,6 +634,23 @@ public class PlayerMovement : MonoBehaviour
     isGrabbingLedge = true;
     ledgePos = pos;
     hasSnapped = false;
+    
+    // Track platform if valid
+    if (ledgeHitbox.LedgeTransform != null)
+    {
+        currentLedgeTransform = ledgeHitbox.LedgeTransform;
+        ledgeLocalPos = currentLedgeTransform.InverseTransformPoint(ledgePos);
+        // We do NOT parent the rigidbody, as it causes physics issues. 
+        // We will manually update position in Update().
+        body.isKinematic = true; 
+        body.velocity = Vector2.zero;
+    }
+    else
+    {
+        currentLedgeTransform = null;
+        body.isKinematic = true; 
+        body.velocity = Vector2.zero;
+    }
 
     // přehrání zvuku ledge grab
     if (ledgeAudioSource != null && ledgeSound != null)
@@ -646,7 +703,31 @@ public class PlayerMovement : MonoBehaviour
         // Debug.Log("Animation time completed, moving character");
         
         // Move the character after animation time
-        transform.position = new Vector2(ledgePos.x, ledgePos.y + 1f);
+        Vector2 targetPos = ledgePos;
+        if (currentLedgeTransform != null)
+        {
+             // Re-calculate target world pos from local pos if on moving platform
+             targetPos = currentLedgeTransform.TransformPoint(ledgeLocalPos);
+        }
+        
+        transform.position = new Vector2(targetPos.x, targetPos.y + 1f);
+        
+        // Unparent and restore physics
+        transform.SetParent(null);
+        body.isKinematic = false;
+        
+        // Inherit velocity from platform if exists
+        if (currentLedgeTransform != null)
+        {
+             MovablePlatforms mp = currentLedgeTransform.GetComponentInParent<MovablePlatforms>();
+             if (mp != null)
+             {
+                 body.velocity = mp.CurrentVelocity;
+             }
+        }
+
+        currentLedgeTransform = null;
+
         isGrabbingLedge = false;
         body.gravityScale = defaultGravityScale;
         
@@ -669,15 +750,32 @@ public class PlayerMovement : MonoBehaviour
     private void LedgeJump()
     {
         isGrabbingLedge = false;
-        body.gravityScale = defaultGravityScale;
         anim.SetBool("ledgeGrab", false);
-
         hasSnapped = false;
 
+        // 1. Move position while still kinematic (safer for physics)
         float pushDirection = -Mathf.Sign(transform.localScale.x);
         transform.position = new Vector2(transform.position.x + pushDirection * ledgeJumpBackDistance, transform.position.y);
 
-        body.velocity = new Vector2(body.velocity.x, ledgeJumpPower);
+        // 2. Restore physics properties
+        body.gravityScale = defaultGravityScale;
+        body.isKinematic = false; 
+
+        // 3. Apply velocity
+        Vector2 jumpVelocity = new Vector2(pushDirection * 2f, ledgeJumpPower); // Add slight horizontal push
+
+        // Add platform velocity for momentum
+        if (currentLedgeTransform != null)
+        {
+            MovablePlatforms mp = currentLedgeTransform.GetComponentInParent<MovablePlatforms>();
+            if (mp != null)
+            {
+                 jumpVelocity += (Vector2)mp.CurrentVelocity;
+            }
+            currentLedgeTransform = null;
+        }
+
+        body.velocity = jumpVelocity;
         anim.SetTrigger("jump");
 
         ledgeGrabCooldownTimer = ledgeGrabCooldown;
@@ -691,9 +789,25 @@ public class PlayerMovement : MonoBehaviour
     {
         isGrabbingLedge = false;
         body.gravityScale = defaultGravityScale;
+        body.isKinematic = false; // Restore physics
         anim.SetBool("ledgeGrab", false);
 
         hasSnapped = false;
+        
+        Vector2 releaseVelocity = Vector2.zero;
+
+        // Add platform velocity for momentum
+        if (currentLedgeTransform != null)
+        {
+            MovablePlatforms mp = currentLedgeTransform.GetComponentInParent<MovablePlatforms>();
+            if (mp != null)
+            {
+                 releaseVelocity += (Vector2)mp.CurrentVelocity;
+            }
+            currentLedgeTransform = null;
+        }
+        
+        body.velocity = releaseVelocity;
 
         ledgeGrabCooldownTimer = ledgeGrabCooldown;
         wallCooldownTimer = wallCooldownAfterLedge;
@@ -959,5 +1073,53 @@ public class PlayerMovement : MonoBehaviour
 
         Gizmos.color = new Color(0f, 1f, 1f, 0.3f);
         Gizmos.DrawCube(snapPosition, new Vector3(0.3f, 0.3f, 0.3f));
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        MovablePlatforms platform = collision.gameObject.GetComponent<MovablePlatforms>();
+        if (platform != null)
+        {
+            // Check if we are standing ON TOP of the platform
+            foreach (ContactPoint2D contact in collision.contacts)
+            {
+                if (contact.normal.y > 0.5f)
+                {
+                    currentPlatform = platform;
+                    break;
+                }
+            }
+        }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        // Ensure we keep tracking if we are still on it
+        MovablePlatforms platform = collision.gameObject.GetComponent<MovablePlatforms>();
+        if (platform != null)
+        {
+            bool onTop = false;
+            foreach (ContactPoint2D contact in collision.contacts)
+            {
+                if (contact.normal.y > 0.5f)
+                {
+                    onTop = true;
+                    break;
+                }
+            }
+            
+            if (onTop)
+                currentPlatform = platform;
+            else if (currentPlatform == platform)
+                currentPlatform = null; // We might have slipped off the top
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (currentPlatform != null && collision.gameObject == currentPlatform.gameObject)
+        {
+            currentPlatform = null;
+        }
     }
 }

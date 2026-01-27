@@ -16,6 +16,7 @@ public class LedgeHitbox : MonoBehaviour
 
     public bool canGrab { get; private set; }
     public Vector2 ledgePosition { get; private set; }
+    public Transform LedgeTransform { get; private set; }
 
     private float lastDetectionTime = 0f;
     private PlayerMovement playerMovement;
@@ -129,7 +130,8 @@ public class LedgeHitbox : MonoBehaviour
         // X = Pozice stěny (wallHit.point.x)
         // Y = Výška ledge (ledgeHit.point.y)
         ledgePosition = new Vector2(wallHit.point.x, ledgeHit.point.y);
-        
+        LedgeTransform = wallHit.collider.transform; // Store the transform of the wall/platform
+
         return true;
     }
 
