@@ -22428,6 +22428,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   knockbackDuration: 0.2
+  damageable: 1
+  knockbackOnly: 0
+  knockbackMultiplier: 3
+  upKnockBoost: 1.5
 --- !u!114 &1411787360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22442,6 +22446,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 10
   playerHealth: {fileID: 317908245}
+  playerKnockbackMultiplier: 8
+  playerKnockbackMultiplierRollingUrchin: 16
 --- !u!70 &1411787361
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

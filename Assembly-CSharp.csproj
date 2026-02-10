@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\Enemies\FlyingEnemy.cs" />
     <Compile Include="Assets\Scripts\Enemies\AntSpitter.cs" />
     <Compile Include="Assets\Scripts\Enemies\Projectiles.cs" />
+    <Compile Include="Assets\Scripts\Environment\PlatformButton.cs" />
     <Compile Include="Assets\Scripts\Core\CameraFollow.cs" />
     <Compile Include="Assets\Sprites\Custom\BackGrounds\Parallax.cs" />
     <Compile Include="Assets\Scripts\Core\ScenePortal.cs" />

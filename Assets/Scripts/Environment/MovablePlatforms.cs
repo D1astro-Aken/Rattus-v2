@@ -9,13 +9,20 @@ public class MovablePlatforms : MonoBehaviour
     [SerializeField] private float speed = 2.0f;
     [SerializeField] private bool loop = false;
     [SerializeField] private bool pingPong = false; // Move back and forth
+    
+    [Header("Activation Control")]
+    [Tooltip("Assign the button(s) that control this platform here.")]
+    [SerializeField] private List<PlatformButton> linkedButtons = new List<PlatformButton>();
+
+    [Header("Debug")]
+    [SerializeField] private bool showDebugLogs = true;
 
     private bool isActivated = false;
     private int currentWaypointIndex = 0;
     private Vector3 startPosition;
     private List<Vector3> globalWaypoints;
     private bool movingForward = true;
-    
+
     public Vector3 CurrentVelocity { get; private set; }
 
     private void Start()
@@ -23,6 +30,15 @@ public class MovablePlatforms : MonoBehaviour
         // Capture the initial position as the starting point (index 0)
         startPosition = transform.position;
         InitializeGlobalWaypoints();
+
+        // Automatically link assigned buttons to this platform
+        foreach (var btn in linkedButtons)
+        {
+            if (btn != null)
+            {
+                btn.SetTargetPlatform(this);
+            }
+        }
     }
 
     private void InitializeGlobalWaypoints()
@@ -128,11 +144,13 @@ public class MovablePlatforms : MonoBehaviour
 
     public void Activate()
     {
+        if (showDebugLogs) Debug.Log($"[MovablePlatforms] Activated: {gameObject.name}");
         isActivated = true;
     }
 
     public void Stop()
     {
+        if (showDebugLogs) Debug.Log($"[MovablePlatforms] Stopped: {gameObject.name}");
         isActivated = false;
     }
 
