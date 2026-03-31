@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\Enemies\FlyingEnemy.cs" />
     <Compile Include="Assets\Scripts\Enemies\AntSpitter.cs" />
     <Compile Include="Assets\Scripts\Enemies\Projectiles.cs" />
+    <Compile Include="Assets\Scripts\Core\CinematicController.cs" />
     <Compile Include="Assets\Scripts\Environment\PlatformButton.cs" />
     <Compile Include="Assets\Scripts\Core\CameraFollow.cs" />
     <Compile Include="Assets\Sprites\Custom\BackGrounds\Parallax.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Assets\Scripts\Player\PlayerAttack.cs" />
     <Compile Include="Assets\Scripts\Enemies\Enemy.cs" />
     <Compile Include="Assets\Scripts\Player\IdleAnimations\IdleSit.cs" />
+    <Compile Include="Assets\Scripts\Environment\GenerateTilemapShadowCasters.cs" />
     <Compile Include="Assets\Scripts\Enemies\MineBee.cs" />
     <Compile Include="Assets\Scripts\Player\LedgeHitbox.cs" />
     <Compile Include="Assets\Scripts\Enemies\ProximityMine.cs" />

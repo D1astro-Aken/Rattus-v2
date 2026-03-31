@@ -3,15 +3,9 @@ using System.Collections;
 
 public class PlatformButton : MonoBehaviour
 {
-    public enum ActivationMethod
-    {
-        StepOn,   // Activates when player steps on/in trigger
-        Interact  // Activates when player presses key while in trigger
-    }
-
     public enum ButtonType
     {
-        Basic, // Switch or Pressure Plate
+        Basic,
         Timer  // Activates for a set duration
     }
 
