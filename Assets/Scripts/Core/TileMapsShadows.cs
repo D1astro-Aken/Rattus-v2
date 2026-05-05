@@ -28,6 +28,14 @@ public class ShadowCaster2DCreator : MonoBehaviour
 	private float zOffset = 0f;
 
 	[SerializeField]
+	[Tooltip("Offset the shadow caster on the X axis.")]
+	private float xOffset = 0f;
+
+	[SerializeField]
+	[Tooltip("Offset the shadow caster on the Y axis.")]
+	private float yOffset = 0f;
+
+	[SerializeField]
 	[Range(0.01f, 1.5f)]
 	[Tooltip("Scales the shadow shape. < 1.0 shrinks it (good for clipping issues).")]
 	private float scaleModifier = 0.95f;
@@ -115,7 +123,7 @@ public class ShadowCaster2DCreator : MonoBehaviour
 		BoundsInt bounds = tilemap.cellBounds;
 		TileBase[] allTiles = tilemap.GetTilesBlock(bounds);
 		
-		// Use a visited set or just iterate rows
+
 		// iterating rows is easier for strips
 		
 		int width = bounds.size.x;
@@ -127,7 +135,7 @@ public class ShadowCaster2DCreator : MonoBehaviour
 			for (int x = 0; x < width; x++)
 			{
 				TileBase tile = allTiles[x + y * width];
-				bool hasTile = tile != null; // Simple check. Can add collider type check if needed.
+				bool hasTile = tile != null; // Simple check. Can add collider type check 
 
 				if (hasTile)
 				{
@@ -158,9 +166,6 @@ public class ShadowCaster2DCreator : MonoBehaviour
 		int gridY = bounds.yMin + y;
 		int gridEndX = bounds.xMin + endX;
 
-		// We assume standard 1x1 cell size for simplicity, or use CellToLocal
-		// But CellToLocal returns center.
-		// Let's assume the grid is rectangular.
 		
 		Vector3 cellSize = tilemap.layoutGrid.cellSize;
 		Vector3 centerStart = tilemap.CellToLocal(new Vector3Int(gridX, gridY, 0));
@@ -171,7 +176,7 @@ public class ShadowCaster2DCreator : MonoBehaviour
 		Vector3 tr = centerEnd + cellSize * 0.5f;
 		Vector3 br = centerEnd + new Vector3(cellSize.x, -cellSize.y, 0) * 0.5f;
 
-		// Correct winding to Counter-Clockwise (CCW) for proper rendering
+
 		// Order: BL -> BR -> TR -> TL
 		Vector2[] path = new Vector2[] { bl, br, tr, tl };
 		
@@ -198,7 +203,8 @@ public class ShadowCaster2DCreator : MonoBehaviour
 		for (int j = 0; j < pathVertices.Length; j++)
 		{
 			Vector2 dir = pathVertices[j] - center;
-			testPath[j] = center + dir * scaleModifier;
+			Vector2 scaledPoint = center + dir * scaleModifier;
+			testPath[j] = new Vector3(scaledPoint.x + xOffset, scaledPoint.y + yOffset, 0);
 		}
 
 		// Try using public SetPath API first (Unity 2021+)
