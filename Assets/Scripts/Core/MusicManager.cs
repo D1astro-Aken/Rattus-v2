@@ -7,7 +7,7 @@ public class MusicManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance != null &amp;&amp; instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
@@ -15,7 +15,7 @@ public class MusicManager : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
-        source = GetComponent&lt;AudioSource&gt;();
+        source = GetComponent<AudioSource>();
     }
 
     private void Start()

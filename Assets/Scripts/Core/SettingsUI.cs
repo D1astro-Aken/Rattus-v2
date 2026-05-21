@@ -68,7 +68,7 @@ public class SettingsUI : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (settingsPanel != null &amp;&amp; settingsPanel.activeSelf)
+            if (settingsPanel != null && settingsPanel.activeSelf)
             {
                 CloseSettings();
             }
@@ -175,7 +175,7 @@ public class SettingsUI : MonoBehaviour
         if (qualityDropdown != null)
         {
             qualityDropdown.ClearOptions();
-            qualityDropdown.AddOptions(new System.Collections.Generic.List&lt;string&gt;(QualitySettings.names));
+            qualityDropdown.AddOptions(new System.Collections.Generic.List<string>(QualitySettings.names));
         }
     }
 }

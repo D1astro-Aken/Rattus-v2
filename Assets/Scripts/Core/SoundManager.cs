@@ -9,7 +9,7 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance != null &amp;&amp; instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
@@ -17,7 +17,7 @@ public class SoundManager : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);
-        source = GetComponent&lt;AudioSource&gt;();
+        source = GetComponent<AudioSource>();
     }
 
     private void Start()
@@ -45,7 +45,7 @@ public class SoundManager : MonoBehaviour
     public void PlayOneOf(params AudioClip[] clips)
     {
         if (clips == null || clips.Length == 0 || source == null) return;
-        List&lt;AudioClip&gt; valid = new List&lt;AudioClip&gt;(clips.Length);
+        List<AudioClip> valid = new List<AudioClip>(clips.Length);
         foreach (var c in clips)
         {
             if (c != null) valid.Add(c);
