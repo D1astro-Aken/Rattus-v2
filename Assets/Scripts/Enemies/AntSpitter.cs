@@ -96,6 +96,15 @@ public class AntSpitter : MonsterPatrol
         {
             ambientSource = GetComponent<AudioSource>();
         }
+        
+        // Configure for 3D spatial sound if available
+        if (ambientSource != null)
+        {
+            ambientSource.spatialBlend = 1f; // 3D sound
+            ambientSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            ambientSource.minDistance = 2f;
+            ambientSource.maxDistance = 15f;
+        }
 
         // Note: We set projectile speed on each spawned instance, not on the prefab
     }
