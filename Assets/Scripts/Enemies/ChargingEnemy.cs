@@ -53,6 +53,15 @@ public class ChargingEnemy : MonsterPatrol
         if (ambientSource == null)
             ambientSource = GetComponent<AudioSource>();
 
+        // Configure for 3D spatial sound if available
+        if (ambientSource != null)
+        {
+            ambientSource.spatialBlend = 1f; // 3D sound
+            ambientSource.rolloffMode = AudioRolloffMode.Logarithmic;
+            ambientSource.minDistance = 2f;
+            ambientSource.maxDistance = 15f;
+        }
+
         if (ambientEnabled && ambientSource != null)
             ambientCoroutine = StartCoroutine(AmbientRoutine());
     }

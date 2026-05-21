@@ -482,7 +482,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 coyoteCounter = coyoteTime;
                 jumpCounter = extraJumps;
-                hasAirDashed = false; // reset povolení air dash po kontaktu se zemí
+                hasAirDashed = false; 
             }
             else
             {

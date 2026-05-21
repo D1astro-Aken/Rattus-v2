@@ -42,8 +42,11 @@ public class Urchin : MonsterPatrol
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
-        // Force 2D sound
-        audioSource.spatialBlend = 0f;
+        // Enable 3D spatial sound (1.0 = 3D, 0.0 = 2D)
+        audioSource.spatialBlend = 1f;
+        audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        audioSource.minDistance = 2f;
+        audioSource.maxDistance = 15f;
 
         EnterPatrol();
     }
