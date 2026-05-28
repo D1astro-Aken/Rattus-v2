@@ -61008,12 +61008,24 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: m_Intensity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_LightType
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_ShadowIntensity
       value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: m_FalloffIntensity
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
+      propertyPath: m_PointLightInnerRadius
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 2507860288294966896, guid: 5f46187f12e828841a17a64ef17924a2, type: 3}
       propertyPath: m_ApplyToSortingLayers.Array.size
@@ -64962,8 +64974,8 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
-  orthographic: 1
+  field of view: 50
+  orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:

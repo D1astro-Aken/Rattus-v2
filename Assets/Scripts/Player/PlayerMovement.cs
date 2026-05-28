@@ -41,6 +41,15 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float ledgeSnapHorizontalOffset = 0.05f; // Ještě přesnější snap
     [SerializeField] private float ledgeHorizontalOffset = 0.1f; // Menší horizontal offset - blíže ke zdi
     [SerializeField] private float ledgeVerticalOffset = 0.2f; // Menší vertical offset - výše na ledge
+    [SerializeField] private float ledgeClimbUpOffset = 0.75f;
+    [SerializeField] private float ledgeClimbForwardOffset = 0.2f;
+    [SerializeField] private float ledgeClimbSurfaceEpsilon = 0.02f;
+    [SerializeField] private string ledgeClimbStateName = "Rattus-LedgeUp";
+    [SerializeField] private float ledgeClimbMaxWait = 2f;
+    [SerializeField] private float ledgeClimbExitNormalizedTime = 0.98f;
+    [SerializeField] private Transform ledgeClimbEndMarker;
+    [SerializeField] private bool ledgeClimbMarkerIsFeet = true;
+    [SerializeField] private Vector2 ledgeClimbMarkerOffset = Vector2.zero;
     [SerializeField] private LedgeHitbox ledgeHitbox;
 
     [SerializeField] private float ledgeGrabCooldown = 0.2f; // Kratší cooldown
@@ -329,7 +338,7 @@ public class PlayerMovement : MonoBehaviour
                     ledgeLocalPos = currentLedgeTransform.InverseTransformPoint(transform.position);
                 }
             }
-            else if (currentLedgeTransform != null)
+            else if (currentLedgeTransform != null && !isClimbingLedge)
             {
                 // Continuous position update for moving platforms
                 transform.position = currentLedgeTransform.TransformPoint(ledgeLocalPos);
@@ -659,6 +668,117 @@ public class PlayerMovement : MonoBehaviour
     }
 }
 
+    private Vector2 GetLedgeClimbEndPosition(Vector2 ledgeWorldPos, float direction)
+    {
+        float desiredX = ledgeWorldPos.x + direction * ledgeClimbForwardOffset;
+
+        float halfHeight = boxCollider.bounds.extents.y;
+        float halfWidth = boxCollider.bounds.extents.x;
+        float castStartY = ledgeWorldPos.y + Mathf.Max(halfHeight * 3f, 2f);
+        float castDistance = Mathf.Max(halfHeight * 6f, 6f);
+
+        float bestSurfaceY = float.NegativeInfinity;
+        bool foundSurface = false;
+        float sampleOffset = halfWidth * 0.45f;
+        float[] xSamples = { desiredX, desiredX - sampleOffset, desiredX + sampleOffset };
+
+        for (int i = 0; i < xSamples.Length; i++)
+        {
+            RaycastHit2D[] hits = Physics2D.RaycastAll(
+                new Vector2(xSamples[i], castStartY),
+                Vector2.down,
+                castDistance,
+                groundLayer | wallLayer
+            );
+
+            for (int h = 0; h < hits.Length; h++)
+            {
+                if (hits[h].collider == null)
+                    continue;
+                if (hits[h].normal.y <= 0.5f)
+                    continue;
+
+                foundSurface = true;
+                if (hits[h].point.y > bestSurfaceY)
+                    bestSurfaceY = hits[h].point.y;
+            }
+        }
+
+        float surfaceY = foundSurface ? bestSurfaceY : ledgeWorldPos.y;
+        float safeY = surfaceY + halfHeight + ledgeClimbSurfaceEpsilon + Mathf.Max(0f, ledgeClimbUpOffset);
+
+        Vector2 overlapSize = new Vector2(
+            boxCollider.bounds.size.x * 0.95f,
+            boxCollider.bounds.size.y * 0.95f
+        );
+
+        Vector2 candidate = new Vector2(desiredX, safeY);
+        Collider2D overlap = Physics2D.OverlapBox(candidate, overlapSize, 0f, groundLayer | wallLayer);
+        if (overlap != null)
+        {
+            float step = Mathf.Max(0.02f, groundCheckDistance);
+            for (int i = 0; i < 60; i++)
+            {
+                candidate.y += step;
+                overlap = Physics2D.OverlapBox(candidate, overlapSize, 0f, groundLayer | wallLayer);
+                if (overlap == null)
+                    break;
+            }
+        }
+
+        return candidate;
+    }
+
+    private Vector2 ResolveOverlapsUp(Vector2 candidate)
+    {
+        Vector2 overlapSize = new Vector2(
+            boxCollider.bounds.size.x * 0.95f,
+            boxCollider.bounds.size.y * 0.95f
+        );
+
+        Collider2D overlap = Physics2D.OverlapBox(candidate, overlapSize, 0f, groundLayer | wallLayer);
+        if (overlap != null)
+        {
+            float step = Mathf.Max(0.02f, groundCheckDistance);
+            for (int i = 0; i < 60; i++)
+            {
+                candidate.y += step;
+                overlap = Physics2D.OverlapBox(candidate, overlapSize, 0f, groundLayer | wallLayer);
+                if (overlap == null)
+                    break;
+            }
+        }
+
+        return candidate;
+    }
+
+    private float FindTopSurfaceY(float x, float referenceY)
+    {
+        float halfHeight = boxCollider.bounds.extents.y;
+        float castStartY = referenceY + Mathf.Max(halfHeight * 3f, 2f);
+        float castDistance = Mathf.Max(halfHeight * 6f, 6f);
+
+        float bestSurfaceY = float.NegativeInfinity;
+        RaycastHit2D[] hits = Physics2D.RaycastAll(
+            new Vector2(x, castStartY),
+            Vector2.down,
+            castDistance,
+            groundLayer | wallLayer
+        );
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].collider == null)
+                continue;
+            if (hits[i].normal.y <= 0.5f)
+                continue;
+            if (hits[i].point.y > bestSurfaceY)
+                bestSurfaceY = hits[i].point.y;
+        }
+
+        return bestSurfaceY;
+    }
+
     // @SFX:LedgeClimb
     private IEnumerator LedgeClimb()
     {
@@ -697,20 +817,69 @@ public class PlayerMovement : MonoBehaviour
         
         // Debug.Log("Using simple timer approach - animation should play now");
         
-        // Wait for the animation duration (this allows the animation to play)
-        yield return new WaitForSeconds(ledgeAnimationDuration);
+        float elapsed = 0f;
+        bool enteredClimbState = false;
+
+        while (elapsed < ledgeClimbMaxWait)
+        {
+            var state = anim.GetCurrentAnimatorStateInfo(0);
+            if (state.IsName(ledgeClimbStateName))
+            {
+                enteredClimbState = true;
+                break;
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (enteredClimbState)
+        {
+            while (elapsed < ledgeClimbMaxWait)
+            {
+                var state = anim.GetCurrentAnimatorStateInfo(0);
+                if (!state.IsName(ledgeClimbStateName))
+                    break;
+                if (state.normalizedTime >= ledgeClimbExitNormalizedTime)
+                    break;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+        else
+        {
+            yield return new WaitForSeconds(ledgeAnimationDuration);
+        }
         
         // Debug.Log("Animation time completed, moving character");
         
-        // Move the character after animation time
-        Vector2 targetPos = ledgePos;
-        if (currentLedgeTransform != null)
+        Vector2 climbEndPos;
+        if (ledgeClimbEndMarker != null)
         {
-             // Re-calculate target world pos from local pos if on moving platform
-             targetPos = currentLedgeTransform.TransformPoint(ledgeLocalPos);
+            climbEndPos = (Vector2)ledgeClimbEndMarker.position + ledgeClimbMarkerOffset;
+            if (ledgeClimbMarkerIsFeet)
+            {
+                float halfHeight = boxCollider.bounds.extents.y;
+                climbEndPos.y += halfHeight;
+            }
         }
-        
-        transform.position = new Vector2(targetPos.x, targetPos.y + 1f);
+        else
+        {
+            climbEndPos = body.position;
+        }
+
+        float endTopSurfaceY = FindTopSurfaceY(climbEndPos.x, climbEndPos.y);
+        if (!float.IsNegativeInfinity(endTopSurfaceY))
+        {
+            float halfHeight = boxCollider.bounds.extents.y;
+            float minY = endTopSurfaceY + halfHeight + ledgeClimbSurfaceEpsilon + Mathf.Max(0f, ledgeClimbUpOffset);
+            if (climbEndPos.y < minY)
+                climbEndPos.y = minY;
+        }
+        climbEndPos = ResolveOverlapsUp(climbEndPos);
+
+        body.position = climbEndPos;
+        body.velocity = Vector2.zero;
+        Physics2D.SyncTransforms();
         
         // Unparent and restore physics
         transform.SetParent(null);

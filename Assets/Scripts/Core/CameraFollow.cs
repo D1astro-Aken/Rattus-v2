@@ -22,6 +22,20 @@ public class CameraFollow : MonoBehaviour
 
     void Update()
     {
+        if (!target)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player)
+            {
+                target = player.transform;
+            }
+        }
+
+        if (!target)
+        {
+            return;
+        }
+
         // Check for up and down arrow key input to adjust yOffset
         if (Input.GetKey(KeyCode.W))
         {
