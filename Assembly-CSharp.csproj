@@ -129,6 +129,7 @@
     <Compile Include="Assets\Scripts\Environment\MovablePlatforms.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Enemies\EnemyDmg.cs" />
+    <Compile Include="Assets\Scripts\Core\SaveManager.cs" />
     <Compile Include="Assets\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
   </ItemGroup>
   <ItemGroup>

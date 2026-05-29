@@ -16,6 +16,8 @@ public class IdleSit : MonoBehaviour
     private float sitCleanTimer = 0f;
     private bool isSitting = false;
 
+    public bool IsSitting => isSitting;
+
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();

@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
+using System;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -20,6 +22,8 @@ public class PauseMenu : MonoBehaviour
         Time.timeScale = 1f;
         AudioListener.pause = false;
         isPaused = false;
+
+        EnsureEventSystem();
     }
 
     private void OnDisable()
@@ -70,6 +74,12 @@ public class PauseMenu : MonoBehaviour
     public void LoadMainMenu()
     {
         Resume();
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.GoToMainMenu();
+            return;
+        }
+
         if (!string.IsNullOrEmpty(mainMenuSceneName))
             LoadScene(mainMenuSceneName);
     }
@@ -103,5 +113,30 @@ public class PauseMenu : MonoBehaviour
         if (SceneTransitionManager.Instance != null) return;
         GameObject managerObj = new GameObject("SceneTransitionManager");
         managerObj.AddComponent<SceneTransitionManager>();
+    }
+
+    private static void EnsureEventSystem()
+    {
+        if (EventSystem.current != null) return;
+
+        EventSystem existing = FindObjectOfType<EventSystem>();
+        if (existing != null)
+        {
+            if (!existing.gameObject.activeInHierarchy)
+                existing.gameObject.SetActive(true);
+            return;
+        }
+
+        GameObject es = new GameObject("EventSystem");
+        es.AddComponent<EventSystem>();
+        Type inputSystemModuleType = Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
+        if (inputSystemModuleType != null)
+        {
+            es.AddComponent(inputSystemModuleType);
+        }
+        else
+        {
+            es.AddComponent<StandaloneInputModule>();
+        }
     }
 }

@@ -6,6 +6,7 @@ public class SettingsUI : MonoBehaviour
 {
     [Header("UI References")]
     public GameObject settingsPanel;
+    [SerializeField] private RectTransform settingsContent;
     public Button openSettingsButton;
     public Button closeSettingsButton;
 
@@ -18,60 +19,95 @@ public class SettingsUI : MonoBehaviour
     public Toggle shadowsToggle;
     public Dropdown qualityDropdown;
 
+    private Canvas settingsCanvas;
+
     private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+    }
+
+    private void OnEnable()
+    {
+        WireEvents();
     }
 
     private void Start()
     {
+        WireEvents();
+
+        UpdateUI();
+    }
+
+    private void WireEvents()
+    {
         if (openSettingsButton != null)
         {
+            openSettingsButton.onClick.RemoveListener(OpenSettings);
             openSettingsButton.onClick.AddListener(OpenSettings);
         }
 
         if (closeSettingsButton != null)
         {
+            closeSettingsButton.onClick.RemoveListener(CloseSettings);
             closeSettingsButton.onClick.AddListener(CloseSettings);
         }
 
         if (masterVolumeSlider != null)
         {
+            masterVolumeSlider.onValueChanged.RemoveListener(OnMasterVolumeChanged);
             masterVolumeSlider.onValueChanged.AddListener(OnMasterVolumeChanged);
         }
 
         if (musicVolumeSlider != null)
         {
+            musicVolumeSlider.onValueChanged.RemoveListener(OnMusicVolumeChanged);
             musicVolumeSlider.onValueChanged.AddListener(OnMusicVolumeChanged);
         }
 
         if (sfxVolumeSlider != null)
         {
+            sfxVolumeSlider.onValueChanged.RemoveListener(OnSFXVolumeChanged);
             sfxVolumeSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
         }
 
         if (shadowsToggle != null)
         {
+            shadowsToggle.onValueChanged.RemoveListener(OnShadowsChanged);
             shadowsToggle.onValueChanged.AddListener(OnShadowsChanged);
         }
 
         if (qualityDropdown != null)
         {
+            qualityDropdown.onValueChanged.RemoveListener(OnQualityChanged);
             qualityDropdown.onValueChanged.AddListener(OnQualityChanged);
             PopulateQualityDropdown();
         }
-
-        UpdateUI();
     }
 
     private void Update()
     {
+        if (settingsPanel == null) return;
+        if (!settingsPanel.activeSelf) return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (settingsPanel != null && settingsPanel.activeSelf)
-            {
+            CloseSettings();
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (settingsContent == null) return;
+
+            if (settingsCanvas == null)
+                settingsCanvas = settingsContent.GetComponentInParent<Canvas>();
+
+            Camera cam = null;
+            if (settingsCanvas != null && settingsCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                cam = settingsCanvas.worldCamera;
+
+            bool inside = RectTransformUtility.RectangleContainsScreenPoint(settingsContent, Input.mousePosition, cam);
+            if (!inside)
                 CloseSettings();
-            }
         }
     }
 

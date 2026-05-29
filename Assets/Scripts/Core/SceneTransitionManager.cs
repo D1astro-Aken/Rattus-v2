@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using UnityEngine.EventSystems;
+using System;
 
 public class SceneTransitionManager : MonoBehaviour
 {
@@ -24,10 +26,63 @@ public class SceneTransitionManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             InitializeCanvas();
+            DisableTransitionRaycasts();
+            SaveManager.EnsureExists();
+            EnsureEventSystem();
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        EnsureEventSystem();
+    }
+
+    private void DisableTransitionRaycasts()
+    {
+        if (fadeImage != null)
+            fadeImage.raycastTarget = false;
+
+        GraphicRaycaster raycaster = GetComponentInChildren<GraphicRaycaster>();
+        if (raycaster != null)
+            raycaster.enabled = false;
+    }
+
+    private static void EnsureEventSystem()
+    {
+        if (EventSystem.current != null) return;
+
+        EventSystem existing = FindObjectOfType<EventSystem>();
+        if (existing != null)
+        {
+            if (!existing.gameObject.activeInHierarchy)
+                existing.gameObject.SetActive(true);
+            return;
+        }
+
+        GameObject es = new GameObject("EventSystem");
+        es.AddComponent<EventSystem>();
+        Type inputSystemModuleType = Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
+        if (inputSystemModuleType != null)
+        {
+            es.AddComponent(inputSystemModuleType);
+        }
+        else
+        {
+            es.AddComponent<StandaloneInputModule>();
         }
     }
 
@@ -44,8 +99,8 @@ public class SceneTransitionManager : MonoBehaviour
         CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 
-        // Přidáme GraphicRaycaster, i když ho nepotřebujeme pro interakci, Unity ho často vyžaduje pro rendering
-        canvasObj.AddComponent<GraphicRaycaster>();
+        GraphicRaycaster raycaster = canvasObj.AddComponent<GraphicRaycaster>();
+        raycaster.enabled = false;
 
         // Vytvoříme Image pro Fade
         GameObject imageObj = new GameObject("FadeImage");
@@ -53,6 +108,7 @@ public class SceneTransitionManager : MonoBehaviour
         
         fadeImage = imageObj.AddComponent<Image>();
         fadeImage.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f); // Začínáme průhlední
+        fadeImage.raycastTarget = false;
         
         // Roztáhneme přes celou obrazovku
         RectTransform rect = fadeImage.rectTransform;

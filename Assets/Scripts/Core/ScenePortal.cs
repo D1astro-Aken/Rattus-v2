@@ -14,6 +14,9 @@ public class ScenePortal : MonoBehaviour
     [Header("Target Scene")]
     public string nextSceneName; // volitelné: jméno scény
     public int nextSceneBuildIndex = -1; // volitelné: build index
+    
+    [Header("Spawn In Next Scene (Optional)")]
+    public string nextSceneSpawnPointName = "PlayerSpawn";
 
     private bool playerInTrigger = false;
 
@@ -46,6 +49,9 @@ public class ScenePortal : MonoBehaviour
 
     private void LoadTargetScene()
     {
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.SetNextSpawnPoint(nextSceneSpawnPointName);
+
         // Zajistíme existenci SceneTransitionManageru
         if (SceneTransitionManager.Instance == null)
         {

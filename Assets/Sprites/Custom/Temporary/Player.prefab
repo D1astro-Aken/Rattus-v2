@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 4451244668925898683}
   - component: {fileID: 1013895527179352767}
   - component: {fileID: 2507860288294966896}
+  - component: {fileID: 934018361412025094}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -125,6 +126,7 @@ Transform:
   m_Children:
   - {fileID: 8119387288219914507}
   - {fileID: 5908675830979253727}
+  - {fileID: 6932839884263771631}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6136394438619036857
@@ -275,12 +277,21 @@ MonoBehaviour:
   dashCooldown: 1
   dashDuration: 0.2
   ledgeJumpBackDistance: 0.5
-  ledgeAnimationDuration: 0.44
+  ledgeAnimationDuration: 0.45
   ledgeJumpPower: 14
   ledgeHangOffsetY: -28.46
   ledgeSnapHorizontalOffset: 0.21
   ledgeHorizontalOffset: 0.1
   ledgeVerticalOffset: 0.2
+  ledgeClimbUpOffset: 0.75
+  ledgeClimbForwardOffset: 0.11
+  ledgeClimbSurfaceEpsilon: 0.05
+  ledgeClimbStateName: Rattus-LedgeUp
+  ledgeClimbMaxWait: 2
+  ledgeClimbExitNormalizedTime: 0.98
+  ledgeClimbEndMarker: {fileID: 6932839884263771631}
+  ledgeClimbMarkerIsFeet: 1
+  ledgeClimbMarkerOffset: {x: 0, y: 0}
   ledgeHitbox: {fileID: 8643228384301851140}
   ledgeGrabCooldown: 0.2
   stepHeight: 0.2
@@ -328,9 +339,7 @@ MonoBehaviour:
   ledgeAudioSource: {fileID: 4451244668925898683}
   fallLandingSound: {fileID: 8300000, guid: ff8942fdd1d4e4247b9a30f58e72be5a, type: 3}
   fallSoundThreshold: 0.7
-  sitSound: {fileID: 8300000, guid: 39f41ab721ba97149b78a69ec0c512a8, type: 3}
   doubleJumpSound: {fileID: 8300000, guid: 45928d6940f3a3c49a6321665fbb9131, type: 3}
-  idleSitDelay: 5
 --- !u!95 &4679209464447048654
 Animator:
   serializedVersion: 5
@@ -368,18 +377,23 @@ MonoBehaviour:
   attackMoveDistance: 1
   attackDelay: 0.3
   postAttackDelay: 1
+  heavyAttackCooldown: 1.5
+  heavyAttackDamage: 70
+  heavyKnockbackMultiplier: 2
+  heavyAttackDelay: 0.5
+  chargeTime: 1
   attackPoint: {fileID: 8119387288219914507}
   attackDamage: 40
   attackRange: 1
   Enemies:
     serializedVersion: 2
     m_Bits: 512
-  attackSound1: {fileID: 0}
-  attackSound2: {fileID: 0}
-  attackSound3: {fileID: 0}
-  attackSound4: {fileID: 0}
-  attackSound5: {fileID: 0}
-  audioSource: {fileID: 0}
+  attackSound1: {fileID: 8300000, guid: 7f01cdf94e150af4ea0a9137b3ae0b9c, type: 3}
+  attackSound2: {fileID: 8300000, guid: d4211baf7cca67b4fad0c6d9eeebbdb2, type: 3}
+  attackSound3: {fileID: 8300000, guid: 0b9e30b4c0ffecd46af4482734c02c12, type: 3}
+  attackSound4: {fileID: 8300000, guid: e4ee5a2908d20f640a3ded1fc72f8cd4, type: 3}
+  attackSound5: {fileID: 8300000, guid: 087dcfc4b9dfb3d4188e7f84629d6318, type: 3}
+  audioSource: {fileID: 4451244668925898683}
 --- !u!114 &4160371410207713875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -417,7 +431,7 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 0.7440996
+  MinDistance: 1.2314377
   MaxDistance: 500
   Pan2D: 0
   rolloffMode: 0
@@ -518,14 +532,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ComponentVersion: 1
-  m_LightType: 4
-  m_BlendStyleIndex: 2
-  m_FalloffIntensity: 0.49
+  m_LightType: 3
+  m_BlendStyleIndex: 0
+  m_FalloffIntensity: 0.7
   m_Color: {r: 0.8867924, g: 0.8867924, b: 0.8867924, a: 1}
-  m_Intensity: 0.94
-  m_LightVolumeIntensity: 0.08
+  m_Intensity: 1
+  m_LightVolumeIntensity: 0
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: c30df532d9bb8e1d591ff5cd2dea24a23dc373996572bfc9
+  m_ApplyToSortingLayers: 00000000c30df532d9bb8e1d591ff5cd2dea24a23dc373996572bfc9
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 1
@@ -535,15 +549,15 @@ MonoBehaviour:
   m_NormalMapQuality: 1
   m_UseNormalMap: 0
   m_ShadowIntensityEnabled: 1
-  m_ShadowIntensity: 0
+  m_ShadowIntensity: 1
   m_ShadowVolumeIntensityEnabled: 1
-  m_ShadowVolumeIntensity: 0.9
+  m_ShadowVolumeIntensity: 1
   m_LocalBounds:
     m_Center: {x: 0, y: -0.00000011920929, z: 0}
     m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
   m_PointLightInnerAngle: 360
   m_PointLightOuterAngle: 360
-  m_PointLightInnerRadius: 0.5995327
+  m_PointLightInnerRadius: 1.2
   m_PointLightOuterRadius: 20
   m_ShapeLightParametricSides: 5
   m_ShapeLightParametricAngleOffset: 0
@@ -555,6 +569,22 @@ MonoBehaviour:
   - {x: 3.369995, y: 7, z: 0}
   - {x: 3.369995, y: -1, z: 0}
   - {x: -7.630005, y: -1, z: 0}
+--- !u!114 &934018361412025094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 287729580174402477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad0f448300254b94e8eda22adfbaa63f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idleSitDelay: 5
+  sitCleanDelay: 8.6
+  sitSound: {fileID: 8300000, guid: 39f41ab721ba97149b78a69ec0c512a8, type: 3}
+  audioSource: {fileID: 4451244668925898683}
 --- !u!1 &987558741780985814
 GameObject:
   m_ObjectHideFlags: 0
@@ -581,7 +611,7 @@ Transform:
   m_GameObject: {fileID: 987558741780985814}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.577, y: -0.381, z: 0}
+  m_LocalPosition: {x: 0.577, y: -0.19, z: 0}
   m_LocalScale: {x: 0.67198014, y: 0.6359394, z: 0.97643}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -599,10 +629,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9071c0349bf51f44b1648c9300b4cc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ledgeDetectionWidth: 0.35
-  ledgeDetectionHeight: 0.6
+  ledgeDetectionWidth: 0.3
+  ledgeDetectionHeight: 0.55
   forwardCheckDistance: 0.3
-  upwardCheckDistance: 0.3
+  upwardCheckDistance: 0.26
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -610,3 +640,34 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   detectionRate: 0.07
+--- !u!1 &6246023405885760123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6932839884263771631}
+  m_Layer: 3
+  m_Name: LedgeClimbEndMarker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6932839884263771631
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6246023405885760123}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.88, y: 0.22, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8046341915116889153}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
